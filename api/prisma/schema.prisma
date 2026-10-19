@@ -1,0 +1,184 @@
+// Database schema of the Weild Weeks app (PostgreSQL).
+//
+// Workflow when you change this file:
+//   1. npm run db:migrate -- --name what_changed   (creates a new SQL migration in prisma/migrations)
+//   2. commit the schema AND the new migration folder together.
+// In Docker, pending migrations are applied automatically when the API container starts.
+//
+// Naming: models and fields are in English (camelCase) in the code, tables and
+// columns are snake_case in the database (see the @map / @@map attributes).
+
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["partialIndexes"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- Enums ----------
+
+/// What a user is allowed to do. Organizers (bureau WEI) can use the back-office.
+enum Role {
+  STUDENT
+  ORGANIZER
+}
+
+/// Event categories shown as coloured filters in the calendar.
+enum EventType {
+  PARTY // Soirée
+  SNACK // Goûter
+  ASSOCIATION // Assos
+  SPORT // Sport
+  SCHOOL // École
+}
+
+/// Place categories shown as coloured pins on the campus map.
+enum PlaceType {
+  SCHOOL
+  ASSOCIATION
+  SPORT
+  OUTDOOR
+  OTHER
+}
+
+// ---------- People ----------
+
+/// A student or organizer. Created/updated at each ViaRézo login.
+model User {
+  id           Int     @id @default(autoincrement())
+  /// Login returned by ViaRézo OAuth. This is how we recognise someone across logins.
+  viarezoLogin String  @unique @map("viarezo_login")
+  firstName    String  @map("first_name")
+  lastName     String  @map("last_name")
+  email        String
+  /// Graduation year as given by ViaRézo (e.g. 2029), if known.
+  promo        Int?
+  role         Role    @default(STUDENT)
+  /// Head of the sponsorship family: the only one who sees the shotgun button.
+  isFamilyHead Boolean @default(false) @map("is_family_head")
+  familyId     Int?    @map("family_id")
+  family       Family? @relation(fields: [familyId], references: [id], onDelete: SetNull)
+  /// UI language: "fr" or "en".
+  language     String  @default("fr")
+
+  favorites     Favorite[]
+  announcements Announcement[]
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([familyId])
+  // At most one head per family (unique index restricted to heads only).
+  @@unique([familyId], map: "users_one_head_per_family", where: raw("is_family_head"))
+  @@map("users")
+}
+
+/// Sponsorship family ("famille de parrainage"). Members are the users pointing to it.
+model Family {
+  id      Int    @id @default(autoincrement())
+  name    String @unique
+  members User[]
+
+  @@map("families")
+}
+
+// ---------- Events ----------
+
+model Event {
+  id             Int       @id @default(autoincrement())
+  title          String
+  description    String    @default("")
+  type           EventType
+  startsAt       DateTime  @map("starts_at") @db.Timestamptz(3)
+  endsAt         DateTime  @map("ends_at") @db.Timestamptz(3)
+  placeId        Int?      @map("place_id")
+  place          Place?    @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  /// Link to the ViaRézo shotgun platform. Null when the event has no shotgun.
+  shotgunUrl     String?   @map("shotgun_url")
+  shotgunOpensAt DateTime? @map("shotgun_opens_at") @db.Timestamptz(3)
+
+  associations EventAssociation[]
+  favorites    Favorite[]
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([startsAt])
+  @@index([placeId])
+  @@map("events")
+}
+
+/// A place on the campus map.
+model Place {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  type      PlaceType
+  latitude  Float
+  longitude Float
+  events    Event[]
+
+  @@map("places")
+}
+
+model Association {
+  id      Int     @id @default(autoincrement())
+  name    String
+  /// Short identifier used in URLs and file names, e.g. "bde".
+  slug    String  @unique
+  /// Logo served by our own server (e.g. /api/static/logos/bde.png).
+  logoUrl String? @map("logo_url")
+
+  events EventAssociation[]
+
+  @@map("associations")
+}
+
+/// Link table: an event can be organised by several associations.
+model EventAssociation {
+  eventId       Int         @map("event_id")
+  associationId Int         @map("association_id")
+  event         Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  association   Association @relation(fields: [associationId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, associationId])
+  @@index([associationId])
+  @@map("event_associations")
+}
+
+model Favorite {
+  userId    Int      @map("user_id")
+  eventId   Int      @map("event_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@id([userId, eventId])
+  @@index([eventId])
+  @@map("favorites")
+}
+
+// ---------- Content ----------
+
+model Announcement {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String
+  authorId    Int?     @map("author_id")
+  author      User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  publishedAt DateTime @default(now()) @map("published_at") @db.Timestamptz(3)
+
+  @@index([publishedAt])
+  @@map("announcements")
+}
+
+/// Key/value settings editable without redeploying,
+/// e.g. "family_change_contact_email".
+model Setting {
+  key   String @id
+  value String
+
+  @@map("settings")
+}

@@ -1,0 +1,16 @@
+{
+  // Used by the editor and `npm run typecheck`. The build uses tsconfig.build.json.
+  "compilerOptions": {
+    "target": "ES2024",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "outDir": "dist"
+  },
+  "include": ["src", "prisma.config.ts"]
+}

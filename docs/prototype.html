@@ -1,0 +1,664 @@
+<title>Appli WEI · prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap">
+<style>
+/* Mise en page : la plage de la présentation (crème, soleil, vagues) autour d'un téléphone ; panneau des fonctions à droite. Thème unique assumé. */
+:root{
+  --sand:#FBF0D8; --sand-2:#F5E3BD; --navy:#24398F; --navy-2:#1B2C70; --orange:#EE9A2E; --orange-d:#C9761A;
+  --sky:#3BB4EA; --sky-2:#1C95D3; --ink:#1E2547; --muted:#6B6F86; --line:#E6DFD0; --card:#FFFFFF; --app-bg:#FBF8F2;
+  --ok:#2E9E5B; --warn:#D9822B; --danger:#D64545;
+  --f:"Montserrat",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--sand);color:var(--ink);font-family:var(--f);margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+.page{min-height:100%;position:relative;overflow:hidden;padding-block:28px 120px;padding-inline:16px}
+.sun{position:absolute;left:-70px;top:-70px;width:190px;height:190px;border-radius:50%;background:#F9C83A;opacity:.9}
+.waves{position:absolute;left:0;right:0;bottom:0;height:110px;pointer-events:none}
+.wrap{position:relative;max-width:1160px;margin:0 auto;display:grid;grid-template-columns:400px minmax(0,1fr);gap:40px;align-items:start}
+.intro{grid-column:1/-1;padding-left:110px}
+.intro h1{font-size:clamp(28px,4vw,44px);font-weight:800;color:var(--navy);margin:0 0 6px;text-wrap:balance}
+.intro p{margin:0;color:var(--muted);max-width:70ch;line-height:1.5;font-size:15px}
+.controls{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:16px;align-items:center}
+.controls label{font-size:12px;font-weight:600;color:var(--navy);text-transform:uppercase;letter-spacing:.06em}
+.seg{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--navy);color:#fff}
+
+/* Téléphone */
+.phone{width:390px;max-width:100%;height:800px;background:#111;border-radius:52px;padding:12px;box-shadow:0 30px 60px -20px rgba(27,44,112,.45);position:sticky;top:20px}
+.screen{position:relative;width:100%;height:100%;background:var(--app-bg);border-radius:40px;overflow:hidden;display:flex;flex-direction:column}
+.notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:110px;height:30px;background:#111;border-radius:20px;z-index:30}
+.status{height:46px;flex:none;display:flex;justify-content:space-between;align-items:flex-end;padding:0 28px 6px;font-size:13px;font-weight:700;z-index:5}
+.appbar{flex:none;display:flex;align-items:center;gap:8px;padding:6px 16px 10px}
+.appbar h2{flex:1;margin:0;font-size:18px;font-weight:800;color:var(--navy)}
+.icon-btn{border:0;background:transparent;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;position:relative;color:var(--navy)}
+.icon-btn:hover{background:rgba(36,57,143,.08)}
+.badge{position:absolute;top:3px;right:3px;min-width:16px;height:16px;border-radius:8px;background:var(--orange);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px}
+.body{flex:1;overflow-y:auto;overflow-x:hidden;padding:0 16px 16px}
+.tabbar{flex:none;display:grid;grid-template-columns:repeat(6,1fr);border-top:1px solid var(--line);background:#fff;padding:6px 4px 20px}
+.tab{border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;font-weight:600;color:#9AA0B5;padding:4px 0}
+.tab[aria-current="page"]{color:var(--orange)}
+.tab svg{width:22px;height:22px}
+
+.screen.dark{background:var(--navy)}
+.screen.dark .status{color:#fff}
+
+/* Composants app */
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
+.h3{font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 8px}
+.ev{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;width:100%;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:8px}
+.ev-logo{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:12px;color:#fff}
+.ev-t{font-weight:700;color:var(--orange-d);font-size:14px;line-height:1.2}
+.ev-m{font-size:12px;color:var(--muted);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
+.star{border:0;background:transparent;font-size:20px;line-height:1;color:#C9C3B4;padding:4px}
+.star[aria-pressed="true"]{color:var(--orange)}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:6px;white-space:nowrap;flex:none}
+.chip[aria-pressed="true"]{border-color:var(--navy);background:var(--navy);color:#fff}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:700;font-size:14px;background:var(--orange);color:#fff;width:100%}
+.btn.sec{background:#fff;color:var(--navy);border:1px solid var(--line)}
+.btn.navy{background:var(--navy)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.field label{font-size:12px;font-weight:600;color:var(--navy)}
+.field input,.field select,.field textarea{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:#fff;color:var(--ink)}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.row{display:flex;gap:8px;align-items:center}
+
+/* Accueil */
+.teaser{position:relative;height:170px;border-radius:18px;overflow:hidden;background:linear-gradient(120deg,#1C95D3,#24398F 45%,#EE9A2E 90%);background-size:220% 220%;animation:pan 9s ease-in-out infinite alternate;color:#fff;display:flex;flex-direction:column;justify-content:flex-end;padding:14px}
+.teaser .big{font-size:30px;font-weight:800;line-height:1;letter-spacing:-.01em;text-shadow:0 2px 0 rgba(0,0,0,.15)}
+.teaser .lbl{position:absolute;top:10px;left:12px;font-size:11px;font-weight:700;background:rgba(0,0,0,.25);padding:3px 8px;border-radius:999px}
+@keyframes pan{from{background-position:0% 50%}to{background-position:100% 50%}}
+@media (prefers-reduced-motion:reduce){.teaser{animation:none}.push{transition:none!important}}
+.count{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.count div{background:#fff;border:1px solid var(--line);border-radius:12px;text-align:center;padding:8px 0}
+.count b{display:block;font-size:22px;color:var(--orange);font-variant-numeric:tabular-nums}
+.count span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ann{border-left:3px solid var(--orange);background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.ann b{color:var(--orange-d);font-size:13px}
+.ann p{margin:4px 0 0;font-size:12px;line-height:1.4}
+.ann .meta{font-size:11px;color:var(--muted);margin-top:4px}
+.links{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.links a{display:flex;flex-direction:column;align-items:center;gap:4px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 4px;font-size:11px;font-weight:600;color:var(--navy);text-decoration:none;text-align:center}
+
+/* Calendrier */
+.search{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:0 6px 0 12px;margin-bottom:10px;color:var(--muted)}
+.search:focus-within{border-color:var(--navy)}
+.search input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:14px;padding:11px 0;color:var(--ink);outline:none}
+.search input::-webkit-search-cancel-button{display:none}
+.cal{background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px}
+.cal-h{display:flex;justify-content:space-between;align-items:center;font-weight:700;color:var(--navy);font-size:14px;margin-bottom:6px}
+.cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.cal-g .dn{font-size:10px;font-weight:600;color:var(--muted);padding:2px 0}
+.cal-g button{border:0;background:transparent;height:34px;border-radius:10px;font-size:13px;font-weight:600;position:relative;font-variant-numeric:tabular-nums}
+.cal-g button.out{color:#C9C3B4}
+.cal-g button.has::after{content:"";position:absolute;bottom:4px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--sky-2)}
+.cal-g button.today{color:var(--orange-d)}
+.cal-g button[aria-pressed="true"]{background:var(--orange);color:#fff}
+.cal-g button[aria-pressed="true"]::after{background:#fff}
+
+/* Détail */
+.hero-ev{display:flex;gap:12px;align-items:flex-start;margin:4px 0 12px}
+.hero-ev h3{margin:0;font-size:19px;color:var(--orange-d);font-weight:800;line-height:1.2}
+.info{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--orange-d);font-weight:600;margin:6px 0}
+.mini-map{position:relative;height:150px;border-radius:14px;overflow:hidden;border:1px solid var(--line);margin:12px 0}
+
+/* Carte */
+.map{position:relative;height:430px;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#CFE6C4}
+.map svg{width:100%;height:100%;display:block}
+.pin{cursor:pointer}
+.pop{position:absolute;left:10px;right:10px;bottom:10px;background:#fff;border-radius:14px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.pop h4{margin:0 0 4px;font-size:15px;color:var(--navy)}
+
+/* Shotgun */
+.sg{position:relative;border-radius:18px;overflow:hidden;color:#fff;background:radial-gradient(circle at 30% 20%,#E43E5B 0,#7A1F4E 40%,#1B2C70 100%);padding:16px;min-height:430px;display:flex;flex-direction:column}
+.sg .org{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+.sg .name{font-size:52px;font-weight:800;letter-spacing:-.02em;line-height:1;margin:10px 0 0;color:#FFE9EF;text-shadow:3px 3px 0 #E43E5B}
+.sg .date{font-size:12px;font-weight:600;opacity:.9}
+.sg .msg{margin-top:auto;background:var(--navy);border-radius:12px;padding:12px;text-align:center;font-weight:700;font-size:14px}
+.sg .timer{display:inline-block;background:#fff;color:var(--ink);font-weight:800;border-radius:8px;padding:6px 10px;margin-top:10px;font-variant-numeric:tabular-nums}
+.paps{margin-top:12px;background:var(--orange);color:#fff;border:0;border-radius:14px;padding:16px;font-size:20px;font-weight:800;letter-spacing:.04em;width:100%}
+.ticket{background:#fff;color:var(--ink);border-radius:14px;padding:12px;margin-top:auto;font-size:12px;line-height:1.45}
+.ticket canvas{display:block;margin:8px auto 0;width:140px;height:140px;image-rendering:pixelated}
+.steps{display:flex;gap:6px;margin:10px 0}
+.steps span{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.steps span.on{background:var(--orange)}
+
+/* ViaRézo simulé */
+.vr-bar{flex:none;display:flex;justify-content:space-between;align-items:center;padding:6px 14px 10px;font-size:12px;font-weight:600;color:#555;border-bottom:1px solid #e5e5e5;background:#f4f4f6}
+.vr-done{border:0;background:transparent;color:#0a66d8;font-weight:700;font-size:13px}
+.body.vr{background:#fff;padding-top:16px}
+.vr h3{margin:6px 0 2px;font-size:20px;color:#222}
+.vr-logo{width:44px;height:44px;border-radius:10px;background:#2b2b2b;color:#fff;font-weight:800;display:grid;place-items:center}
+.vr-k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#777;margin:0 0 6px}
+.vr-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.vr-stat{border:1px solid #e5e5e5;border-radius:12px;padding:10px}
+.vr-stat b{display:block;font-size:22px;color:#222;font-variant-numeric:tabular-nums}
+.vr-stat span{font-size:11px;color:#777}
+.vr-btn{font-size:16px;letter-spacing:0}
+.compose{border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:12px}
+.compose>div{display:flex;gap:8px;padding:8px 10px;border-bottom:1px solid var(--line)}
+.compose span{color:var(--muted);width:40px;flex:none}
+.compose pre{margin:0;padding:10px;font:inherit;white-space:pre-wrap;line-height:1.45}
+/* Profil */
+.prof{display:flex;flex-direction:column;align-items:center;gap:4px;margin:6px 0 12px}
+.avatar{width:72px;height:72px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:26px;font-weight:800}
+.fam li{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+.fam{list-style:none;margin:0;padding:0}
+.tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--sand-2);color:var(--orange-d)}
+.menu button{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;background:#fff;border-bottom:1px solid var(--line);padding:12px 4px;font-size:14px;font-weight:600;color:var(--navy);text-align:left}
+
+/* Connexion */
+.login{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:22px;padding:24px;text-align:center;color:#fff}
+.login h1{font-size:24px;line-height:1.25;color:var(--orange);margin:0}
+.logo{width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3BB4EA,#1C95D3 55%,#EE9A2E 56%,#F9C83A 70%,transparent 71%);display:grid;place-items:center;font-weight:800;font-size:22px;color:#fff;text-shadow:0 2px 0 #1B2C70}
+
+/* Notification push */
+.push{position:absolute;left:10px;right:10px;top:48px;z-index:40;background:rgba(255,255,255,.97);border-radius:18px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.25);transform:translateY(-140%);transition:transform .35s ease;display:flex;gap:10px;align-items:flex-start;border:0;text-align:left;width:auto}
+.push.show{transform:none}
+.push .ic{width:34px;height:34px;border-radius:9px;background:var(--navy);color:var(--orange);display:grid;place-items:center;font-weight:800;font-size:11px;flex:none}
+.push b{font-size:13px}.push p{margin:2px 0 0;font-size:12px;line-height:1.35}
+.sheet-bg{position:absolute;inset:0;background:rgba(20,24,50,.45);z-index:35;display:flex;align-items:flex-end}
+.sheet{background:#fff;width:100%;border-radius:22px 22px 0 0;padding:18px 16px 28px;max-height:85%;overflow:auto}
+.sheet h3{margin:0 0 10px;color:var(--navy);font-size:17px}
+.toast{position:absolute;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:12px;font-weight:600;padding:8px 14px;border-radius:999px;z-index:45;white-space:nowrap}
+.stars-rate{display:flex;gap:4px}.stars-rate button{border:0;background:transparent;font-size:26px;color:#D7D0BF;padding:0}.stars-rate button[aria-pressed="true"]{color:var(--orange)}
+
+/* Panneau des fonctions */
+.side h2{font-size:22px;color:var(--navy);margin:0 0 4px;font-weight:800}
+.side>p{margin:0 0 14px;color:var(--muted);font-size:14px;line-height:1.5}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:14px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.k{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em}
+.k.p25{background:#DDE5FB;color:var(--navy)}
+.k.nx{background:#FCE3C2;color:var(--orange-d)}
+.scr{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.scr article{background:rgba(255,255,255,.75);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.scr article.cur{border-color:var(--orange);background:#fff;box-shadow:0 0 0 2px var(--orange)}
+.scr h3{margin:0 0 6px;font-size:15px;color:var(--navy);display:flex;justify-content:space-between;gap:8px;align-items:center}
+.scr h3 button{border:0;background:var(--navy);color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:4px 10px;flex:none}
+.scr ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+.scr li{font-size:13px;line-height:1.4;display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px;align-items:baseline}
+.persp{margin-top:18px;background:rgba(255,255,255,.75);border:1px dashed var(--orange);border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.5}
+.persp b{color:var(--navy)}
+
+@media (max-width:900px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:24px}
+  .intro{padding-left:70px}
+  .phone{position:relative;top:0;margin:0 auto}
+}
+@media (max-width:440px){
+  .intro{padding-left:0;padding-top:70px}
+  .phone{height:760px;border-radius:40px;padding:8px}
+  .screen{border-radius:32px}
+}
+</style>
+
+<div class="page">
+  <div class="sun" aria-hidden="true"></div>
+  <div class="wrap">
+    <header class="intro">
+      <h1>Appli WEI · Weild Weeks 2026</h1>
+      <p>Prototype cliquable qui reprend toutes les fonctions de la présentation de l'appli WEI 2025, plus les pistes de « Poursuite du projet ». Les noms d'événements et de lieux viennent de la présentation ; les dates (septembre 2026), les personnes et les numéros sont fictifs. Le téléphone simule le mercredi 2 septembre 2026, 14 h.</p>
+      <div class="controls">
+        <label for="role-seg">Voir en tant que</label>
+        <div class="seg" id="role-seg" role="group" aria-label="Rôle simulé">
+          <button data-role="fillot">1A</button>
+          <button data-role="chef">Chef de famille</button>
+          <button data-role="orga">Organisateur</button>
+        </div>
+        <label for="sg-seg">Shotgun Peñano</label>
+        <div class="seg" id="sg-seg" role="group" aria-label="État du shotgun">
+          <button data-sg="avant">Pas encore ouvert</button>
+          <button data-sg="ouvert">Ouvert</button>
+          <button data-sg="rate">Raté</button>
+          <button data-sg="obtenu">Place obtenue</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="phone" aria-label="Téléphone simulé">
+      <div class="screen" id="screen">
+        <div class="notch" aria-hidden="true"></div>
+        <div class="status"><span>14:00</span><span>5G ▮▮▮</span></div>
+        <button class="push" id="push" aria-live="polite"></button>
+        <div id="app" style="flex:1;display:flex;flex-direction:column;min-height:0"></div>
+      </div>
+    </div>
+
+    <aside class="side">
+      <h2>Les fonctions, écran par écran</h2>
+      <p>Cliquez sur « Voir » pour ouvrir l'écran dans le téléphone. L'écran affiché est encadré en orange.</p>
+      <div class="legend">
+        <span><i class="k p25">Présentation</i> fonction présentée pour l'appli 2025</span>
+        <span><i class="k nx">Perspective</i> piste « Poursuite du projet » ou « Perspectives »</span>
+      </div>
+      <div class="scr" id="recap"></div>
+      <div class="persp"><b>Hors maquette (perspectives techniques de la présentation)</b> : renforcer la sécurité de l'API face aux injections, et publier sur l'App Store et le Play Store avant le 1er septembre. L'architecture présentée reste la même : front React, back Node.js, base MongoDB, images sur Cloudinary, connexion ViaRézo.</div>
+    </aside>
+  </div>
+  <svg class="waves" viewBox="0 0 1440 110" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 50 Q 90 10 180 50 T 360 50 T 540 50 T 720 50 T 900 50 T 1080 50 T 1260 50 T 1440 50 V110 H0Z" fill="#5BC6EF"/>
+    <path d="M0 75 Q 120 45 240 75 T 480 75 T 720 75 T 960 75 T 1200 75 T 1440 75 V110 H0Z" fill="#1FA3DE"/>
+  </svg>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- Données (exemples) ---------- */
+const NOW0 = new Date(2026,8,2,14,0,0).getTime();
+const t0 = Date.now();
+const now = () => NOW0 + (Date.now()-t0);
+const WW_START = new Date(2026,7,31,9,0,0).getTime();
+const WEI_START = new Date(2026,8,11,14,0,0).getTime();
+
+const TYPES = {
+  soiree:{l:"Soirée",c:"#7A1F4E"}, gouter:{l:"Goûter",c:"#EE9A2E"}, asso:{l:"Assos",c:"#24398F"},
+  sport:{l:"Sport",c:"#2E9E5B"}, admin:{l:"École",c:"#1C95D3"}
+};
+const PLACES = {
+  eiffel:{n:"Bâtiment Eiffel",x:150,y:120,cat:"admin",i:"Amphis, accueil des 1A, administration."},
+  eiffelE:{n:"Façade Eiffel Est",x:205,y:150,cat:"gouter",i:"Point de rendez-vous des goûters d'assos."},
+  eiffelO:{n:"Façade Eiffel Ouest",x:95,y:150,cat:"gouter",i:"Point de rendez-vous des goûters d'assos."},
+  carre:{n:"Carré des sciences",x:250,y:70,cat:"gouter",i:"Pelouse centrale, goûters et forums."},
+  agora:{n:"Agora",x:150,y:235,cat:"asso",i:"Barspés et soirées d'assos."},
+  breguet:{n:"Tour des Assos (Bréguet)",x:270,y:220,cat:"asso",i:"Locaux des associations, Tour des assos."},
+  teilhard:{n:"Centre Teilhard de Chardin",x:70,y:300,cat:"asso",i:"Aumônerie, Messe CC."},
+  plaine:{n:"Plaine derrière la rez I",x:250,y:330,cat:"soiree",i:"Soirées en extérieur. Entrée fermée à 1 h."},
+  gym:{n:"Gymnase",x:310,y:120,cat:"sport",i:"Tour des sports, BDS."},
+  musee:{n:"Musée",x:60,y:60,cat:"admin",i:"Lieu préenregistré (48.7094, 2.1668)."}
+};
+let EVENTS = [
+  {id:1,d:"2026-09-02",s:"10:00",e:"18:00",t:"Tour des cotiz",o:"WEI",ty:"asso",p:"eiffel",desc:"Passe payer ta cotiz BDE, BDS et WEI. Prends ta carte étudiante."},
+  {id:2,d:"2026-09-02",s:"15:00",e:"17:00",t:"Goûter Commus",o:"Commus",ty:"gouter",p:"carre",desc:"Goûter des associations communautaires, crêpes offertes."},
+  {id:3,d:"2026-09-02",s:"16:45",e:"19:00",t:"Goûter LinkCS",o:"LinkCS",ty:"gouter",p:"eiffelE",desc:"Découvre LinkCS, l'outil où vivent toutes les assos."},
+  {id:4,d:"2026-09-02",s:"16:00",e:"18:00",t:"Goûter Ecoclub",o:"Ecoclub",ty:"gouter",p:"eiffelO",desc:"Goûter zéro déchet, viens avec ton écocup."},
+  {id:5,d:"2026-09-02",s:"19:00",e:"20:30",t:"Barspé Impact",o:"Impact",ty:"asso",p:"agora",desc:"Bar spécial de l'asso Impact."},
+  {id:6,d:"2026-09-02",s:"19:00",e:"20:30",t:"Messe CC",o:"Aumônerie",ty:"asso",p:"teilhard",desc:"Messe de rentrée."},
+  {id:7,d:"2026-09-03",s:"23:00",e:"03:00",t:"Soirée en extérieur AdR x BdI x FACS x SBCS x C-Mix",o:"AdR",ty:"soiree",p:"plaine",desc:"L'AdR, le BDS, la WACS et le C7 te convient à ta première soirée de l'année ! Viens avec ton écocup. L'entrée ferme à 1 h."},
+  {id:8,d:"2026-09-03",s:"14:00",e:"17:00",t:"Tour des sports",o:"BDS",ty:"sport",p:"gym",desc:"Essaie tous les sports du campus."},
+  {id:9,d:"2026-09-01",s:"09:00",e:"12:00",t:"Amphi de rentrée",o:"Administration",ty:"admin",p:"eiffel",desc:"Accueil par la direction de l'école."},
+  {id:10,d:"2026-09-04",s:"14:00",e:"18:00",t:"Tour des assos",o:"BDE",ty:"asso",p:"breguet",desc:"Rencontre toutes les associations."},
+  {id:11,d:"2026-09-04",s:"23:00",e:"04:00",t:"Peñano",o:"AdR",ty:"soiree",p:"plaine",desc:"Soirée sur shotgun. Places attribuées aux chefs de famille.",sg:true},
+  {id:12,d:"2026-09-07",s:"12:00",e:"14:00",t:"Forum JE",o:"Forum CentraleSupélec",ty:"admin",p:"carre",desc:"Forum MariaJE, rencontre les juniors entreprises."},
+  {id:13,d:"2026-08-31",s:"18:00",e:"21:00",t:"Accueil des familles",o:"WEI",ty:"asso",p:"carre",desc:"Rencontre ta famille de parrainage."}
+];
+let ANN = [
+  {t:"Bienvenue à CentraleSupélec !",b:"Meilleure école du monde. Retrouve ici tout le programme des Weild Weeks.",f:"La team WW",d:"31/08"},
+  {t:"Tour des cotiz aujourd'hui",b:"Passe payer ta cotiz BDE, BDS et WEI au bâtiment Eiffel jusqu'à 18 h. Prends ta carte étudiante.",f:"Bureau WEI",d:"02/09"},
+  {t:"Inscriptions au WEI",b:"Dernier jour pour choisir ton bus sur wei-cs.fr.",f:"Bureau WEI",d:"01/09"}
+];
+const FAMILY = {name:"mADRe mia",members:["Arthur L. (chef)","Jeanne B.","Malik D.","Inès P.","Hugo T.","Clara M.","Yanis R.","Léa F.","Tom G.","Sara K."]};
+const CONTACT = {mail:"familles@wei-cs.fr", tel:"06 12 34 56 78"};
+const LOGO = {WEI:"WEI",Commus:"CC",LinkCS:"Lk",Ecoclub:"Eco",Impact:"Imp",Aumônerie:"CC",AdR:"AdR",BDS:"BDS",Administration:"CS",BDE:"BDE","Forum CentraleSupélec":"JE"};
+
+/* ---------- État ---------- */
+const S = {
+  screen:"login", prev:"home", role:"fillot", sg:"avant", fav:new Set([2,7]), day:"2026-09-02",
+  filter:new Set(), favOnly:false, q:"", sortHour:true, ev:null, mapCat:new Set(), mapDay:"2026-09-02", place:null,
+  notifs:[{t:"Rappel",b:"Goûter Commus dans 1 h au Carré des sciences.",r:false},{t:"Shotgun",b:"Le SG Peñano ouvre aujourd'hui à 16 h 24.",r:false}],
+  famVia:"mail", survey:{done:false,rate:0,info:null}, sgOpenAt:NOW0 + (2*3600+24*60+12)*1000, sgPlaces:120, sheet:null, toast:null
+};
+try{ const r = localStorage.getItem("wei-proto-role"); if(r) S.role=r; }catch(e){}
+
+/* ---------- Utilitaires ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pad = n => String(n).padStart(2,"0");
+const JOURS = ["dim.","lun.","mar.","mer.","jeu.","ven.","sam."];
+const MOIS = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+const dObj = k => { const [y,m,d]=k.split("-").map(Number); return new Date(y,m-1,d); };
+const dKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const dLong = k => { const d=dObj(k); return `${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]}`; };
+const hfmt = h => h.replace(":","h").replace("h00","h");
+const isChef = () => S.role==="chef";
+const ICON = {
+  home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+  star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+  cal:'<rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="2"/>',
+  map:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z M9 4v14 M15 6v14" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+  sg:'<path d="M3 9a2 2 0 0 0 0 6v3h18v-3a2 2 0 0 1 0-6V6H3z M13 6v12" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="0" stroke-linejoin="round"/>',
+  user:'<circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6" fill="none" stroke="currentColor" stroke-width="2"/>',
+  bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z M10 20a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+  back:'<path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
+  pin:'<path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" fill="currentColor"/>',
+  clock:'<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" fill="none"/>',
+  search:'<circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>',
+  tool:'<path d="M14 6a4 4 0 0 0 5 5l-9 9-3-3 9-9a4 4 0 0 0-2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>'
+};
+const ic = (n,s=22) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
+
+/* ---------- Récapitulatif ---------- */
+const RECAP = [
+  {id:"login",n:"Connexion",f:[["p25","Connexion ViaRézo pour les participants et les organisateurs"],["nx","Rôle attribué à la connexion : 1A, chef de famille, organisateur"]]},
+  {id:"home",n:"Accueil",f:[["p25","Décompte jusqu'aux Weild Weeks, puis jusqu'au WEI"],["p25","Vidéo teaser des Weild Weeks en boucle"],["p25","Dernières annonces de l'asso WEI et de l'administration"],["p25","Liens : site du WEI, guide de survie, Instagram"]]},
+  {id:"cal",n:"Calendrier",f:[["nx","Barre de recherche : titre, asso, lieu ou type, sur toutes les Weild Weeks"],["p25","Calendrier des Weild Weeks, nombre d'événements par jour"],["p25","Filtres par type et par favoris, tri par heure"],["p25","Étoile pour ajouter aux favoris"]]},
+  {id:"detail",n:"Détail d'un événement",f:[["p25","Organisateur, date, horaires, lieu, description"],["p25","Lieu épinglé sur la carte"],["p25","Ajouter aux favoris"]]},
+  {id:"fav",n:"Favoris",f:[["p25","Mes événements marqués, groupés par jour"],["nx","Rappel push avant chaque favori"]]},
+  {id:"map",n:"Carte interactive",f:[["p25","Carte du campus avec points clés préenregistrés"],["p25","Nom et infos du lieu au clic sur un point"],["p25","Filtres colorés par catégorie"],["p25","Calendrier : événements du jour placés sur la carte"]]},
+  {id:"sg",n:"Shotgun",f:[["p25","Shotgun réservé aux chefs de famille, pour toute la famille"],["p25","Compte à rebours jusqu'à l'ouverture"],["nx","Le chef de famille est renvoyé vers la plateforme de shotgun ViaRézo"],["p25","Billet QR pour chaque membre de la famille servie"],["p25","Les autres membres voient l'état du SG, sans places ni liste d'attente"]]},
+  {id:"vr",n:"Plateforme ViaRézo (externe)",f:[["nx","Shotgun du chef de famille, places restantes, rang en liste d'attente"],["nx","Accessible aux chefs de famille et aux orgas seulement"],["p25","Mise à jour du shotgun par les orgas (places, ouverture)"]]},
+  {id:"profile",n:"Profil",f:[["p25","Infos personnelles et famille de parrainage"],["p25","Membres de la famille, chef identifié"],["nx","Demande de changement de famille par mail ou SMS, objet « Demande de changement de famille »"],["nx","Questionnaire de satisfaction"]]},
+  {id:"notifs",n:"Notifications",f:[["p25","Messages et alertes envoyés par les organisateurs"],["nx","Notifications push sur le téléphone"]]},
+  {id:"survey",n:"Questionnaire",f:[["nx","4 questions : note de l'appli, facilité à trouver les événements, fonction la plus utile, une amélioration"]]},
+  {id:"orga",n:"Espace organisateur",f:[["p25","Ajout d'événements en temps réel"],["p25","Envoi de messages et d'alertes à la promo"],["p25","Lien vers la gestion du shotgun sur ViaRézo"]]},
+];
+function renderRecap(){
+  $("#recap").innerHTML = RECAP.map(r => `<article class="${r.id===S.screen?"cur":""}"><h3>${esc(r.n)}<button data-go="${r.id}" aria-label="Voir l'écran ${esc(r.n)}">Voir</button></h3><ul>${r.f.map(([k,t])=>`<li><i class="k ${k}">${k==="p25"?"Prés.":"Persp."}</i><span>${esc(t)}</span></li>`).join("")}</ul></article>`).join("");
+}
+
+/* ---------- Écrans ---------- */
+function appbar(title, opts={}){
+  const unread = S.notifs.filter(n=>!n.r).length;
+  return `<div class="appbar">${opts.back?`<button class="icon-btn" data-back aria-label="Retour">${ic("back")}</button>`:""}<h2>${esc(title)}</h2>
+  ${S.role==="orga"&&!opts.back?`<button class="icon-btn" data-go="orga" aria-label="Espace organisateur">${ic("tool")}</button>`:""}
+  ${opts.back?"":`<button class="icon-btn" data-go="notifs" aria-label="Notifications">${ic("bell")}${unread?`<span class="badge">${unread}</span>`:""}</button>`}</div>`;
+}
+function tabbar(){
+  const tabs=[["home","Accueil","home"],["fav","Favoris","star"],["cal","Calendrier","cal"],["map","Carte","map"],["sg","Shotgun","sg"],["profile","Profil","user"]];
+  const cur = {detail:"cal",notifs:"home",survey:"profile",orga:"profile",vr:"sg"}[S.screen]||S.screen;
+  return `<nav class="tabbar">${tabs.map(([id,l,i])=>`<button class="tab" data-go="${id}" ${cur===id?'aria-current="page"':""}>${ic(i)}${l}</button>`).join("")}</nav>`;
+}
+function evRow(e){
+  const ty=TYPES[e.ty];
+  return `<div class="ev"><span class="ev-logo" style="background:${ty.c}">${esc(LOGO[e.o]||e.o.slice(0,3))}</span>
+  <button data-ev="${e.id}" style="border:0;background:transparent;text-align:left;padding:0;min-width:0"><div class="ev-t">${esc(e.t)}</div>
+  <div class="ev-m"><span>${ic("clock",12)} ${hfmt(e.s)} - ${hfmt(e.e)}</span><span>${ic("pin",12)} ${esc(PLACES[e.p].n)}</span></div></button>
+  <button class="star" data-fav="${e.id}" aria-pressed="${S.fav.has(e.id)}" aria-label="${S.fav.has(e.id)?"Retirer des":"Ajouter aux"} favoris">${S.fav.has(e.id)?"★":"☆"}</button></div>`;
+}
+function countdown(){
+  const n=now(); const before=n<WW_START; const tgt = before?WW_START:WEI_START; let s=Math.max(0,Math.floor((tgt-n)/1000));
+  const j=Math.floor(s/86400); s%=86400; const h=Math.floor(s/3600); s%=3600; const m=Math.floor(s/60); s%=60;
+  return {lbl: before?"avant les Weild Weeks":"avant le départ au WEI", v:[j,h,m,s]};
+}
+
+const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+function calList(){
+  const q=norm(S.q.trim());
+  let list = q ? EVENTS.filter(e=>[e.t,e.o,PLACES[e.p].n,TYPES[e.ty].l,e.desc].some(v=>norm(v).includes(q))) : EVENTS.filter(e=>e.d===S.day);
+  if(S.filter.size) list=list.filter(e=>S.filter.has(e.ty));
+  if(S.favOnly) list=list.filter(e=>S.fav.has(e.id));
+  list.sort((a,b)=> q ? (a.d+a.s).localeCompare(b.d+b.s) : S.sortHour ? a.s.localeCompare(b.s) : 0);
+  const n=list.length, pl=n>1?"s":"";
+  const head = q ? `${n} résultat${pl} pour « ${esc(S.q.trim())} » sur toutes les Weild Weeks` : `${n} événement${pl} le ${dLong(S.day)}`;
+  let body;
+  if(!n) body=`<p class="muted small" style="text-align:center">${q?"Aucun événement ne correspond. Essaie un nom d'asso ou de lieu.":"Aucun événement avec ces filtres."}</p>`;
+  else if(q){ let last=""; body=list.map(e=>{ const h=e.d!==last?`<div class="h3" style="margin-top:10px">${dLong(e.d)}</div>`:""; last=e.d; return h+evRow(e); }).join(""); }
+  else body=list.map(evRow).join("");
+  return `<p style="text-align:center;font-weight:700;color:var(--orange-d);font-size:14px;margin:12px 0 8px">${head}</p>${body}`;
+}
+
+const SCREENS = {
+login(){
+  return `<div class="login"><div class="logo">WEI<br>2026</div><h1>Bienvenue sur l'application<br>du WEI 2026</h1>
+  <button class="btn" data-login style="max-width:260px">Se connecter avec ViaRézo</button>
+  <p class="small" style="opacity:.75;margin:0">Ton compte CentraleSupélec suffit.<br>Les orgas se connectent de la même façon.</p></div>`;
+},
+home(){
+  const c=countdown();
+  return appbar("Weild Weeks 2026")+`<div class="body">
+  <div class="teaser" role="img" aria-label="Vidéo teaser des Weild Weeks, lue en boucle"><span class="lbl">▶ Teaser · en boucle</span><div class="big">WEILD<br>WEEKS 2026</div></div>
+  <div class="count" id="count" aria-label="Compte à rebours ${c.lbl}">${["Jours","Heures","Min","Sec"].map((l,i)=>`<div><b>${pad(c.v[i])}</b><span>${l}</span></div>`).join("")}</div>
+  <p class="small muted" style="text-align:center;margin:6px 0 0" id="count-lbl">${c.lbl}</p>
+  <div class="h3">Dernières annonces</div>
+  ${ANN.slice(0,3).map(a=>`<div class="ann"><b>${esc(a.t)}</b><p>${esc(a.b)}</p><div class="meta">${esc(a.f)} · ${esc(a.d)}</div></div>`).join("")}
+  <div class="h3">Liens</div>
+  <div class="links"><a href="https://wei-cs.fr" target="_blank" rel="noopener">${ic("home",20)}Site du WEI</a><a href="#" data-toast="Le guide de survie s'ouvrirait ici (PDF).">${ic("cal",20)}Guide de survie</a><a href="https://instagram.com" target="_blank" rel="noopener">${ic("star",20)}Instagram</a></div>
+  </div>`+tabbar();
+},
+cal(){
+  const start=dObj("2026-08-31"); const days=[]; for(let i=0;i<14;i++){const d=new Date(start);d.setDate(start.getDate()+i);days.push(dKey(d));}
+  const has=new Set(EVENTS.map(e=>e.d)); const todayK=dKey(new Date(now()));
+  return appbar("Calendrier")+`<div class="body">
+  <div class="search">${ic("search",18)}<input id="cal-q" type="search" placeholder="Rechercher un événement, une asso, un lieu" value="${esc(S.q)}" aria-label="Rechercher un événement" autocomplete="off">${S.q?`<button class="icon-btn" data-clearq aria-label="Effacer la recherche" style="width:28px;height:28px">✕</button>`:""}</div>
+  <div class="cal"><div class="cal-h"><span>Weild Weeks 2026</span><span class="small muted">31 août · 13 sept.</span></div>
+  <div class="cal-g">${["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"].map(d=>`<span class="dn">${d}</span>`).join("")}
+  ${days.map(k=>`<button data-day="${k}" class="${has.has(k)?"has":""} ${k===todayK?"today":""}" aria-pressed="${k===S.day}" aria-label="${dLong(k)}">${dObj(k).getDate()}</button>`).join("")}</div></div>
+  <div class="row" style="justify-content:space-between;margin:12px 0 6px"><span class="small" style="font-weight:700;color:var(--navy)">Filtrer par</span>
+  <button class="chip" data-sort aria-pressed="${S.sortHour}">Trier par heure</button></div>
+  <div class="chips">${`<button class="chip" data-favonly aria-pressed="${S.favOnly}">★ Favoris</button>`}${Object.entries(TYPES).map(([k,t])=>`<button class="chip" data-type="${k}" aria-pressed="${S.filter.has(k)}"><i class="dot" style="background:${t.c}"></i>${t.l}</button>`).join("")}</div>
+  <div id="cal-list">${calList()}</div>
+  </div>`+tabbar();
+},
+detail(){
+  const e=EVENTS.find(x=>x.id===S.ev)||EVENTS[6]; const pl=PLACES[e.p];
+  return appbar("Détails",{back:true})+`<div class="body">
+  <div class="hero-ev"><span class="ev-logo" style="background:${TYPES[e.ty].c}">${esc(LOGO[e.o]||e.o.slice(0,3))}</span><div><h3>${esc(e.t)}</h3><span class="small muted">par ${esc(e.o)} · ${TYPES[e.ty].l}</span></div></div>
+  <div class="info">${ic("cal",16)} ${dLong(e.d)}</div><div class="info">${ic("clock",16)} ${hfmt(e.s)} - ${hfmt(e.e)}</div><div class="info">${ic("pin",16)} ${esc(pl.n)}</div>
+  <p style="font-size:13px;line-height:1.5;margin:10px 0">${esc(e.desc)}</p>
+  <div class="mini-map">${mapSvg(e.p,true)}</div>
+  <button class="btn sec" data-gomap="${e.p}">Voir sur la carte</button>
+  ${e.sg?`<button class="btn navy" data-go="sg" style="margin-top:8px">Aller au shotgun</button>`:""}
+  <div style="text-align:center;margin-top:16px"><div class="small" style="color:var(--orange-d);font-weight:600">${S.fav.has(e.id)?"Dans tes favoris":"Ajouter aux favoris"}</div>
+  <button class="star" style="font-size:34px" data-fav="${e.id}" aria-pressed="${S.fav.has(e.id)}" aria-label="Favori">${S.fav.has(e.id)?"★":"☆"}</button></div>
+  </div>`;
+},
+fav(){
+  const list=EVENTS.filter(e=>S.fav.has(e.id)).sort((a,b)=>(a.d+a.s).localeCompare(b.d+b.s));
+  const byDay={}; list.forEach(e=>(byDay[e.d]=byDay[e.d]||[]).push(e));
+  return appbar("Mes favoris")+`<div class="body">${list.length?Object.keys(byDay).map(d=>`<div class="h3">${dLong(d)}</div>${byDay[d].map(evRow).join("")}`).join(""):`<div class="card" style="text-align:center;margin-top:30px"><p style="font-size:30px;margin:0;color:var(--orange)">☆</p><p class="small">Touche l'étoile d'un événement dans le calendrier pour le retrouver ici.</p><button class="btn" data-go="cal">Ouvrir le calendrier</button></div>`}
+  <p class="small muted" style="text-align:center">Un rappel est envoyé 1 h avant chaque favori.</p></div>`+tabbar();
+},
+map(){
+  const days=["2026-09-01","2026-09-02","2026-09-03","2026-09-04"];
+  const pl=S.place?PLACES[S.place]:null; const evs=pl?EVENTS.filter(e=>e.p===S.place&&e.d===S.mapDay):[];
+  return appbar("Carte")+`<div class="body">
+  <div class="chips" style="margin-bottom:6px">${days.map(d=>`<button class="chip" data-mapday="${d}" aria-pressed="${S.mapDay===d}">${dLong(d)}</button>`).join("")}</div>
+  <div class="chips" style="margin-bottom:8px">${Object.entries(TYPES).map(([k,t])=>`<button class="chip" data-mapcat="${k}" aria-pressed="${S.mapCat.has(k)}"><i class="dot" style="background:${t.c}"></i>${t.l}</button>`).join("")}</div>
+  <div class="map">${mapSvg(S.place,false)}
+  ${pl?`<div class="pop"><div class="row" style="justify-content:space-between"><h4>${esc(pl.n)}</h4><button class="icon-btn" data-place="" aria-label="Fermer" style="width:28px;height:28px">✕</button></div><p class="small" style="margin:0 0 6px">${esc(pl.i)}</p>
+  ${evs.length?evs.map(e=>`<button class="chip" data-ev="${e.id}" style="margin:2px 4px 0 0">${hfmt(e.s)} · ${esc(e.t.length>28?e.t.slice(0,28)+"…":e.t)}</button>`).join(""):`<span class="small muted">Rien de prévu ici le ${dLong(S.mapDay)}.</span>`}</div>`:""}
+  </div><p class="small muted" style="margin:6px 0 0">Plan schématique. Les points pleins ont un événement le jour choisi.</p></div>`+tabbar();
+},
+sg(){
+  const n=now(); let s=Math.max(0,Math.floor((S.sgOpenAt-n)/1000)); const t=`${pad(Math.floor(s/3600))}:${pad(Math.floor(s%3600/60))}:${pad(s%60)}`;
+  const chef=isChef(); const st=S.sg;
+  const vrBtn = l => `<button class="paps vr-btn" data-go="vr">${l} ↗</button>`;
+  let inner;
+  if(st==="obtenu"){
+    inner=`<div class="ticket"><b style="color:var(--navy)">Place confirmée · famille ${esc(FAMILY.name)}</b><br>Viens avec ton écocup. Attention, l'entrée ferme à 1 h.<br>Nom : Jambe · Prénom : Jean<br>Téléphone : 06 00 00 00 00<br>Suis les infos sur l'Instagram de l'AdR.<canvas id="qr" width="29" height="29" aria-label="QR code factice du billet"></canvas><div class="small muted" style="text-align:center">À présenter à l'entrée</div></div>`;
+  } else if(chef && st==="avant"){
+    inner=`<div class="msg">Tu es chef d'une famille de ${FAMILY.members.length} personnes<br><span class="timer" id="sgt">SG DANS ${t}</span><br><span class="small" style="font-weight:500">Le shotgun se fait sur la plateforme ViaRézo.</span></div>`;
+  } else if(chef && st==="ouvert"){
+    inner=`<div class="msg">Le SG est ouvert<br><span class="small" style="font-weight:500">Shotgun pour toute ta famille sur ViaRézo</span></div>${vrBtn("Shotgunner sur ViaRézo")}`;
+  } else if(chef && st==="rate"){
+    inner=`<div class="msg">Le SG est complet<br><span class="small" style="font-weight:500">Ton rang en liste d'attente est sur ViaRézo.</span></div>${vrBtn("Voir sur ViaRézo")}`;
+  } else {
+    const why = st==="rate"?"Ta famille n'a pas de place pour l'instant. Ton chef de famille suit la suite.":st==="ouvert"?"Le SG est ouvert : ton chef de famille shotgun pour vous.":"Le SG est réservé aux chefs de famille.";
+    inner=`<div class="msg">${why}${st==="avant"?`<br><span class="timer" id="sgt">SG DANS ${t}</span>`:""}</div>`;
+  }
+  const step = st==="obtenu"?3:st==="ouvert"?2:1;
+  return appbar("Shotgun")+`<div class="body">
+  <div class="steps" aria-hidden="true"><span class="on"></span><span class="${step>=2?"on":""}"></span><span class="${step>=3?"on":""}"></span></div>
+  <div class="sg"><span class="org">L'AdR CentraleSupélec, le BDS, la WACS et le C7 présentent</span><div class="name">PEÑANO</div><span class="date">ven. 4 sept. · 23h · Plaine derrière la rez I</span>${inner}</div>
+  <p class="small muted" style="margin-top:8px">${chef?"Tu vois cet écran en tant que chef de famille.":"Tu vois cet écran en tant que membre d'une famille : pas d'accès à ViaRézo, ni aux places ou à la liste d'attente."} Change le rôle et l'état du SG au-dessus du téléphone.</p>
+  </div>`+tabbar();
+},
+vr(){
+  const orga=S.role==="orga", st=S.sg;
+  let s=Math.max(0,Math.floor((S.sgOpenAt-now())/1000)); const t=`${pad(Math.floor(s/3600))}:${pad(Math.floor(s%3600/60))}:${pad(s%60)}`;
+  const stat=(l,v)=>`<div class="vr-stat"><b>${v}</b><span>${l}</span></div>`;
+  let body;
+  if(orga) body=`<p class="vr-k">Vue organisateur</p><div class="vr-stats">${stat("places restantes",S.sgPlaces)}${stat("familles en attente",23)}</div>
+    <div class="row" style="margin-top:10px"><button class="btn sec" data-places="-10">−10 places</button><button class="btn sec" data-places="10">+10 places</button></div>
+    <button class="btn navy" data-sgopen style="margin-top:8px">${S.sg==="avant"?"Ouvrir le SG maintenant":"SG ouvert"}</button>`;
+  else if(st==="avant") body=`<div class="vr-stats">${stat("places",S.sgPlaces)}${stat("ouverture dans",`<span id="vrt">${t}</span>`)}</div><button class="btn" disabled style="margin-top:12px">Shotgun</button>`;
+  else if(st==="ouvert") body=`<div class="vr-stats">${stat("places restantes",S.sgPlaces)}${stat("places demandées",FAMILY.members.length)}</div><p class="small">Famille ${esc(FAMILY.name)}, chef : Arthur L.</p><button class="btn" data-paps style="margin-top:6px">Shotgun !</button>`;
+  else if(st==="rate") body=`<div class="vr-stats">${stat("places restantes",0)}${stat("rang en liste d'attente",14)}</div><p class="small">Si une place se libère, tu reçois un mail de ViaRézo.</p>`;
+  else body=`<div class="vr-stats">${stat("places obtenues",FAMILY.members.length)}${stat("places restantes",S.sgPlaces)}</div><p class="small">Les billets de ta famille sont dans l'appli WEI.</p>`;
+  return `<div class="vr-bar"><span>🔒 ViaRézo · Shotgun</span><button data-back class="vr-done">Terminé</button></div>
+  <div class="body vr"><div class="vr-logo">VR</div><h3>Peñano</h3><p class="small muted" style="margin:0 0 12px">ven. 4 sept. 2026 · 23 h · AdR CentraleSupélec</p>${body}
+  <p class="small muted" style="margin-top:16px">Page de la plateforme ViaRézo, ouverte depuis l'appli WEI (simulée).</p></div>`;
+},
+profile(){
+  const role={fillot:"1A",chef:"1A · chef de famille",orga:"Organisateur · bureau WEI"}[S.role];
+  return appbar("Profil")+`<div class="body">
+  <div class="prof"><div class="avatar">JJ</div><b style="font-size:17px;color:var(--navy)">Jean Jambe</b><span class="small muted">${role} · promo 2029</span></div>
+  <div class="card"><div class="row" style="justify-content:space-between"><b style="color:var(--navy);font-size:14px">Ma famille de parrainage</b><span class="tag">${esc(FAMILY.name)}</span></div>
+  <ul class="fam">${FAMILY.members.map((m,i)=>`<li><span>${esc(m)}</span>${i===0?'<span class="tag">Chef</span>':""}</li>`).join("")}</ul>
+  <button class="btn sec" data-sheet="fam" style="margin-top:10px">Demander à changer de famille</button></div>
+  <div class="menu" style="margin-top:12px">
+  <button data-go="survey">Questionnaire de satisfaction <span class="${S.survey.done?"muted":"tag"}">${S.survey.done?"Merci !":"Nouveau"}</span></button>
+  <button data-go="notifs">Notifications ${ic("bell",18)}</button>
+  ${S.role==="orga"?`<button data-go="orga">Espace organisateur ${ic("tool",18)}</button>`:""}
+  <button data-logout style="color:var(--danger)">Se déconnecter</button></div>
+  </div>`+tabbar();
+},
+notifs(){
+  S.notifs.forEach(n=>n.r=true);
+  return appbar("Notifications",{back:true})+`<div class="body">${S.notifs.map(n=>`<div class="ann"><b>${esc(n.t)}</b><p>${esc(n.b)}</p></div>`).join("")}
+  <p class="small muted">Les alertes des orgas arrivent aussi en notification push, même appli fermée.</p></div>`;
+},
+survey(){
+  if(S.survey.done) return appbar("Questionnaire",{back:true})+`<div class="body"><div class="card" style="text-align:center;margin-top:30px"><p style="font-size:28px;margin:0;color:var(--orange)">${"★".repeat(S.survey.rate)}</p><p>Merci, ta réponse aide l'équipe de l'an prochain.</p><button class="btn sec" data-back>Retour</button></div></div>`;
+  const opt=(id,v)=>`<button type="button" class="chip" data-qinfo="${v}" aria-pressed="${S.survey.info===v}">${v}</button>`;
+  return appbar("Questionnaire",{back:true})+`<div class="body"><p class="small muted" style="margin-top:0">4 questions, moins d'une minute.</p><form id="survey-f">
+  <div class="field"><label>1. Ta note pour l'appli WEI</label><div class="stars-rate">${[1,2,3,4,5].map(i=>`<button type="button" data-rate="${i}" aria-pressed="${i<=S.survey.rate}" aria-label="${i} sur 5">★</button>`).join("")}</div></div>
+  <div class="field"><label>2. As-tu trouvé facilement où et quand avaient lieu les événements ?</label><div class="chips">${["Oui","Plutôt","Non"].map(v=>opt("i",v)).join("")}</div></div>
+  <div class="field"><label for="q-use">3. La fonction qui t'a le plus servi</label><select id="q-use"><option>Calendrier</option><option>Carte</option><option>Shotgun</option><option>Annonces</option><option>Profil et famille</option></select></div>
+  <div class="field"><label for="q-miss">4. Une chose à ajouter ou à améliorer</label><textarea id="q-miss" rows="2" placeholder="Une fonction, une info…"></textarea></div>
+  <button class="btn" type="submit" ${S.survey.rate?"":"disabled"}>Envoyer</button></form></div>`;
+},
+orga(){
+  if(S.role!=="orga") return appbar("Espace organisateur",{back:true})+`<div class="body"><div class="card" style="margin-top:20px">Cet espace est réservé aux organisateurs. Choisis « Organisateur » au-dessus du téléphone.</div></div>`;
+  return appbar("Espace organisateur",{back:true})+`<div class="body">
+  <div class="h3" style="margin-top:4px">Envoyer une alerte</div>
+  <form id="alert-f" class="card"><div class="field"><label for="a-to">Destinataires</label><select id="a-to"><option>Toute la promo</option><option>Famille mADRe mia</option><option>Chefs de famille</option></select></div>
+  <div class="field"><label for="a-msg">Message</label><textarea id="a-msg" rows="2">La soirée en extérieur est déplacée à l'Agora à cause de la pluie.</textarea></div>
+  <button class="btn" type="submit">Envoyer la notification</button></form>
+  <div class="h3">Ajouter un événement</div>
+  <form id="ev-f" class="card"><div class="field"><label for="e-t">Titre</label><input id="e-t" value="Goûter BDA"></div>
+  <div class="row"><div class="field" style="flex:1"><label for="e-d">Jour</label><select id="e-d">${["2026-09-02","2026-09-03","2026-09-04"].map(d=>`<option value="${d}">${dLong(d)}</option>`).join("")}</select></div>
+  <div class="field" style="flex:1"><label for="e-s">Heure</label><input id="e-s" type="time" value="17:30"></div></div>
+  <div class="row"><div class="field" style="flex:1"><label for="e-ty">Type</label><select id="e-ty">${Object.entries(TYPES).map(([k,t])=>`<option value="${k}">${t.l}</option>`).join("")}</select></div>
+  <div class="field" style="flex:1"><label for="e-p">Lieu</label><select id="e-p">${Object.entries(PLACES).map(([k,p])=>`<option value="${k}">${esc(p.n)}</option>`).join("")}</select></div></div>
+  <button class="btn navy" type="submit">Publier tout de suite</button></form>
+  <div class="h3">Shotgun Peñano</div>
+  <div class="card"><p class="small" style="margin:0 0 8px">Les places et la liste d'attente se gèrent sur la plateforme ViaRézo.</p><button class="btn navy" data-go="vr">Gérer le SG sur ViaRézo ↗</button></div>
+  </div>`;
+}
+};
+
+function mapSvg(sel, mini){
+  const dayEv = new Set(EVENTS.filter(e=>e.d===(mini?"":S.mapDay)).map(e=>e.p));
+  const vb = mini&&sel ? `${PLACES[sel].x-90} ${PLACES[sel].y-50} 180 100` : "0 0 360 400";
+  const pins = Object.entries(PLACES).filter(([k,p])=>mini?k===sel:(!S.mapCat.size||S.mapCat.has(p.cat))).map(([k,p])=>{
+    const c=TYPES[p.cat].c; const on=dayEv.has(k)||mini; const big=k===sel;
+    return `<g class="pin" ${mini?"":`data-place="${k}" tabindex="0" role="button" aria-label="${esc(p.n)}"`} transform="translate(${p.x} ${p.y})">
+    <path d="M0 0 C-9 -12 -9 -26 0 -26 C9 -26 9 -12 0 0Z" transform="scale(${big?1.35:1})" fill="${on?c:"#fff"}" stroke="${c}" stroke-width="2.5"/>
+    ${mini?"":`<text y="12" text-anchor="middle" font-size="9" font-weight="700" fill="#1E2547" font-family="Montserrat,sans-serif">${esc(p.n.split(" (")[0].replace("Bâtiment ","").replace("Centre ",""))}</text>`}</g>`;
+  }).join("");
+  return `<svg viewBox="${vb}" preserveAspectRatio="xMidYMid slice" aria-label="Plan du campus">
+  <rect x="-200" y="-200" width="800" height="800" fill="#CFE6C4"/>
+  <path d="M-200 190 H600 M180 -200 V600" stroke="#fff" stroke-width="14"/>
+  <path d="M-200 280 Q 180 260 600 300" stroke="#fff" stroke-width="8" fill="none"/>
+  <rect x="100" y="95" width="105" height="45" rx="4" fill="#E8DFCF"/><rect x="225" y="45" width="60" height="45" rx="22" fill="#B8DDA8"/>
+  <rect x="120" y="210" width="60" height="30" rx="4" fill="#E8DFCF"/><rect x="245" y="195" width="55" height="40" rx="4" fill="#E8DFCF"/>
+  <rect x="285" y="95" width="50" height="35" rx="4" fill="#E8DFCF"/><rect x="40" y="280" width="55" height="35" rx="4" fill="#E8DFCF"/>
+  <rect x="200" y="305" width="110" height="55" rx="10" fill="#B8DDA8"/><rect x="35" y="40" width="55" height="35" rx="4" fill="#E8DFCF"/>
+  <path d="M-200 380 Q 100 360 600 395 V600 H-200Z" fill="#9BD3EE"/>
+  ${pins}</svg>`;
+}
+
+/* ---------- Rendu ---------- */
+function render(){
+  const scr=$("#screen"); scr.classList.toggle("dark", S.screen==="login");
+  let html = SCREENS[S.screen]();
+  if(S.sheet==="fam"){
+    const mail=S.famVia==="mail", subj="Demande de changement de famille";
+    const msg=`Bonjour,\n\nJe suis Jean Jambe (1A), actuellement dans la famille ${FAMILY.name}. Je souhaite changer de famille.\n\nRaison : \n\nMerci !`;
+    const href = mail ? `mailto:${CONTACT.mail}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(msg)}` : `sms:${CONTACT.tel.replace(/ /g,"")}?&body=${encodeURIComponent(subj+"\n\n"+msg)}`;
+    html += `<div class="sheet-bg" data-closesheet><div class="sheet" role="dialog" aria-label="Changer de famille"><h3>Changer de famille</h3>
+    <p class="small" style="margin:0 0 10px">Ta demande part par ${mail?"mail":"SMS"} au contact renseigné par le bureau WEI.</p>
+    <div class="seg" style="margin-bottom:12px"><button data-via="mail" aria-pressed="${mail}">Par mail</button><button data-via="sms" aria-pressed="${!mail}">Par SMS</button></div>
+    <div class="compose"><div><span>À</span><b>${mail?CONTACT.mail:CONTACT.tel}</b></div>${mail?`<div><span>Objet</span><b>${subj}</b></div>`:""}
+    <pre>${esc((mail?"":subj+"\n\n")+msg)}</pre></div>
+    <a class="btn" href="${esc(href)}" data-composer style="display:block;text-align:center;text-decoration:none;margin-top:12px">Ouvrir ${mail?"mon appli Mail":"Messages"}</a>
+    <p class="small muted" style="margin:8px 0 0">L'appli ouvre ${mail?"ta messagerie":"Messages"} avec ce texte prêt, tu complètes la raison et tu envoies.</p></div></div>`;
+  }
+  if(S.toast) html += `<div class="toast" role="status">${esc(S.toast)}</div>`;
+  $("#app").innerHTML = html;
+  const q=$("#qr"); if(q) drawQR(q);
+  document.querySelectorAll("#role-seg button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.role===S.role));
+  document.querySelectorAll("#sg-seg button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.sg===S.sg));
+  renderRecap();
+}
+function go(id){ if(id==="vr"&&S.screen!=="vr") S.vrFrom=S.screen; if(id!==S.screen){ if(!["detail","notifs","survey","orga","vr"].includes(S.screen)) S.prev=S.screen; S.screen=id; } S.sheet=null; render(); const b=document.querySelector("#app .body"); if(b) b.scrollTop=0; }
+function toast(m){ S.toast=m; render(); clearTimeout(toast.t); toast.t=setTimeout(()=>{S.toast=null;render();},2200); }
+function push(title,body){
+  S.notifs.unshift({t:title,b:body,r:false});
+  const p=$("#push"); p.innerHTML=`<span class="ic">WEI</span><span><b>${esc(title)}</b> <span class="small muted">· maintenant</span><p>${esc(body)}</p></span>`;
+  p.classList.add("show"); clearTimeout(push.t); push.t=setTimeout(()=>p.classList.remove("show"),3500); render();
+}
+function drawQR(c){
+  const x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,29,29); x.fillStyle="#111"; let seed=7;
+  const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
+  for(let i=0;i<29;i++)for(let j=0;j<29;j++) if(rnd()>.52) x.fillRect(i,j,1,1);
+  [[0,0],[22,0],[0,22]].forEach(([a,b])=>{x.fillStyle="#fff";x.fillRect(a,b,7,7);x.fillStyle="#111";x.fillRect(a,b,7,7);x.fillStyle="#fff";x.fillRect(a+1,b+1,5,5);x.fillStyle="#111";x.fillRect(a+2,b+2,3,3);});
+}
+
+/* ---------- Événements ---------- */
+document.addEventListener("click", ev=>{
+  const t=ev.target.closest("[data-go],[data-back],[data-login],[data-logout],[data-ev],[data-fav],[data-day],[data-type],[data-favonly],[data-sort],[data-mapday],[data-mapcat],[data-place],[data-gomap],[data-paps],[data-sheet],[data-closesheet],[data-rate],[data-places],[data-sgopen],[data-toast],[data-via],[data-qinfo],[data-composer],[data-clearq],[data-role],[data-sg],#push");
+  if(!t) return; const d=t.dataset;
+  if(t.id==="push"){ go("notifs"); return; }
+  if(d.closesheet!==undefined && ev.target!==t) return;
+  if(d.go){ if(S.screen==="login"&&d.go!=="login") {} go(d.go); }
+  else if(d.back!==undefined) go(S.screen==="vr"?(S.vrFrom||"sg"):(S.prev||"home"));
+  else if(d.login!==undefined) go("home");
+  else if(d.logout!==undefined) go("login");
+  else if(d.ev){ S.ev=+d.ev; go("detail"); }
+  else if(d.fav){ const id=+d.fav; S.fav.has(id)?S.fav.delete(id):S.fav.add(id); render(); }
+  else if(d.day){ S.day=d.day; render(); }
+  else if(d.type){ S.filter.has(d.type)?S.filter.delete(d.type):S.filter.add(d.type); render(); }
+  else if(d.favonly!==undefined){ S.favOnly=!S.favOnly; render(); }
+  else if(d.sort!==undefined){ S.sortHour=!S.sortHour; render(); }
+  else if(d.mapday){ S.mapDay=d.mapday; render(); }
+  else if(d.mapcat){ S.mapCat.has(d.mapcat)?S.mapCat.delete(d.mapcat):S.mapCat.add(d.mapcat); S.place=null; render(); }
+  else if(d.place!==undefined){ S.place=d.place||null; render(); }
+  else if(d.gomap){ S.place=d.gomap; const e=EVENTS.find(x=>x.id===S.ev); if(e) S.mapDay=e.d; go("map"); }
+  else if(d.paps!==undefined){ S.sg="obtenu"; S.sgPlaces=Math.max(0,S.sgPlaces-FAMILY.members.length); render(); push("Shotgun réussi","10 places Peñano pour la famille mADRe mia. Les billets sont dans l'onglet Shotgun de chaque membre."); }
+  else if(d.sheet){ S.sheet=d.sheet; render(); }
+  else if(d.closesheet!==undefined){ S.sheet=null; render(); }
+  else if(d.rate){ S.survey.rate=+d.rate; render(); }
+  else if(d.places){ S.sgPlaces=Math.max(0,S.sgPlaces+(+d.places)); render(); }
+  else if(d.sgopen!==undefined){ if(S.sg==="avant"){ S.sg="ouvert"; S.sgOpenAt=now(); render(); push("Le SG Peñano est ouvert","Chefs de famille, c'est maintenant !"); } }
+  else if(d.via){ S.famVia=d.via; render(); }
+  else if(d.qinfo){ S.survey.info=d.qinfo; render(); }
+  else if(d.composer!==undefined){ toast(S.famVia==="mail"?"Ta messagerie s'ouvre avec le message prêt":"Messages s'ouvre avec le texte prêt"); }
+  else if(d.clearq!==undefined){ S.q=""; render(); const i=$("#cal-q"); if(i) i.focus(); }
+  else if(d.toast){ ev.preventDefault(); toast(d.toast); }
+  else if(d.role){ S.role=d.role; try{localStorage.setItem("wei-proto-role",S.role);}catch(e){} if(S.screen==="login") S.screen="home"; render(); }
+  else if(d.sg){ S.sg=d.sg; if(d.sg==="avant") S.sgOpenAt=now()+(2*3600+24*60+12)*1000; if(S.screen==="login") S.screen="sg"; else go("sg"); render(); }
+});
+document.addEventListener("input", ev=>{
+  if(ev.target.id!=="cal-q") return;
+  const had=!!S.q; S.q=ev.target.value;
+  if(had!==!!S.q){ const pos=ev.target.selectionStart; render(); const i=$("#cal-q"); if(i){ i.focus(); i.setSelectionRange(pos,pos); } }
+  else { const l=$("#cal-list"); if(l) l.innerHTML=calList(); }
+});
+document.addEventListener("keydown", ev=>{ if((ev.key==="Enter"||ev.key===" ")&&ev.target.matches&&ev.target.matches("g[data-place]")){ ev.preventDefault(); S.place=ev.target.dataset.place; render(); }});
+document.addEventListener("submit", ev=>{
+  ev.preventDefault(); const f=ev.target;
+  if(f.id==="alert-f"){ const m=$("#a-msg").value.trim()||"Nouvelle info du bureau WEI."; ANN.unshift({t:"Alerte · "+$("#a-to").value,b:m,f:"Bureau WEI",d:"02/09"}); push("Bureau WEI",m); }
+  else if(f.id==="ev-f"){ const id=Math.max(...EVENTS.map(e=>e.id))+1; const s=$("#e-s").value||"17:30"; const [h,m]=s.split(":").map(Number);
+    EVENTS.push({id,d:$("#e-d").value,s,e:`${pad((h+2)%24)}:${pad(m)}`,t:$("#e-t").value.trim()||"Nouvel événement",o:"WEI",ty:$("#e-ty").value,p:$("#e-p").value,desc:"Ajouté à l'instant par le bureau WEI."});
+    S.day=$("#e-d").value; push("Nouvel événement",`${$("#e-t").value} · ${dLong($("#e-d").value)} à ${hfmt(s)}. Il est déjà dans le calendrier.`); }
+  else if(f.id==="survey-f"){ S.survey.done=true; render(); }
+});
+setInterval(()=>{
+  if(S.screen==="home"){ const c=countdown(); const el=$("#count"); if(el) el.querySelectorAll("b").forEach((b,i)=>b.textContent=pad(c.v[i])); }
+  if(S.screen==="vr"){ const el=$("#vrt"); if(el){ let s=Math.max(0,Math.floor((S.sgOpenAt-now())/1000)); el.textContent=`${pad(Math.floor(s/3600))}:${pad(Math.floor(s%3600/60))}:${pad(s%60)}`; } }
+  if(S.screen==="sg"){ const el=$("#sgt"); if(el){ let s=Math.max(0,Math.floor((S.sgOpenAt-now())/1000)); el.textContent=`SG DANS ${pad(Math.floor(s/3600))}:${pad(Math.floor(s%3600/60))}:${pad(s%60)}`; } }
+},1000);
+render();
+})();
+</script>

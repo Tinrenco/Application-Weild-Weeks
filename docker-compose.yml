@@ -1,0 +1,45 @@
+# Local development stack: PostgreSQL + API.
+#   docker compose up --build        start everything (migrations run automatically)
+#   docker compose exec api npm run db:seed   fill the database with fictional data
+#   docker compose down              stop (data is kept in the "db-data" volume)
+#   docker compose down -v           stop AND delete the database
+#
+# Values come from ./.env if it exists (copy .env.example), otherwise the dev defaults below.
+# The production stack (reverse proxy, admin, backups) will be added for the ViaRézo server.
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-wei}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wei}
+      POSTGRES_DB: ${POSTGRES_DB:-wei}
+    volumes:
+      - db-data:/var/lib/postgresql
+    # Only reachable from this computer (for `npm run dev` and Prisma Studio), not from the network.
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-wei}:${POSTGRES_PASSWORD:-wei}@db:5432/${POSTGRES_DB:-wei}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-dev-secret-change-me}
+      DEV_LOGIN_ENABLED: ${DEV_LOGIN_ENABLED:-true}
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    # Open on the local network so a phone running Expo Go can reach it.
+    ports:
+      - "3000:3000"
+
+volumes:
+  db-data:

@@ -1,0 +1,14 @@
+# Dependencies and build output
+node_modules/
+dist/
+
+# Secrets and local settings — use the .env.example files as templates
+.env
+.env*.local
+
+# Generated Prisma client (re-created by `npm install` in api/)
+api/src/generated/
+
+# OS / editor
+.DS_Store
+Thumbs.db

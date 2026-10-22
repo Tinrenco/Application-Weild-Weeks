@@ -5,6 +5,8 @@ import express, { type ErrorRequestHandler } from "express";
 import { ZodError } from "zod";
 import { config } from "./config.js";
 import { devAuthRouter } from "./routes/dev-auth.js";
+import { eventsRouter } from "./routes/events.js";
+import { favoritesRouter } from "./routes/favorites.js";
 import { healthRouter } from "./routes/health.js";
 import { meRouter } from "./routes/me.js";
 
@@ -18,6 +20,8 @@ export function createApp() {
 
   app.use("/api/health", healthRouter);
   app.use("/api/me", meRouter);
+  app.use("/api/events", eventsRouter);
+  app.use("/api/favorites", favoritesRouter);
   if (config.DEV_LOGIN_ENABLED) {
     app.use("/api/auth", devAuthRouter);
   }

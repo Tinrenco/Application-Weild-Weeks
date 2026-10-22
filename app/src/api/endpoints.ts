@@ -37,9 +37,34 @@ export type DevUser = {
   family: { name: string } | null;
 };
 
+export type EventType = "PARTY" | "SNACK" | "ASSOCIATION" | "SPORT" | "SCHOOL";
+
+/** See api/src/events.ts. Dates are ISO strings (JSON has no date type). */
+export type Event = {
+  id: number;
+  title: string;
+  description: string;
+  type: EventType;
+  startsAt: string;
+  endsAt: string;
+  place: { id: number; name: string; latitude: number; longitude: number } | null;
+  associations: { id: number; name: string; slug: string; logoUrl: string | null }[];
+  isFavorite: boolean;
+  /** Null when the event has no shotgun. `url` is only sent to family heads and organizers. */
+  shotgun: { opensAt: string | null; url: string | null } | null;
+};
+
 export const getHealth = () => apiFetch<Health>("/health");
 
 export const getMe = () => apiFetch<Profile>("/me");
+
+export const getEvents = () => apiFetch<Event[]>("/events");
+
+export const addFavorite = (eventId: number) =>
+  apiFetch<null>(`/favorites/${eventId}`, { method: "PUT" });
+
+export const removeFavorite = (eventId: number) =>
+  apiFetch<null>(`/favorites/${eventId}`, { method: "DELETE" });
 
 // --- Development login (only works when the API has DEV_LOGIN_ENABLED=true) ---
 

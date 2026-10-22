@@ -1,14 +1,34 @@
 // Basic building blocks shared by screens.
 import { Ionicons } from "@expo/vector-icons";
 import type { ComponentProps, ReactNode } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useT } from "@/i18n";
 import { colors, fonts, radius, spacing } from "@/theme";
 
+type ScreenProps = {
+  children: ReactNode;
+  /** Pass both to enable pull-to-refresh. */
+  refreshing?: boolean;
+  onRefresh?: () => void;
+};
+
 /** Scrollable screen with the app background and standard padding. */
-export function Screen({ children }: { children: ReactNode }) {
+export function Screen({ children, refreshing, onRefresh }: ScreenProps) {
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
+      refreshControl={
+        onRefresh && (
+          <RefreshControl
+            refreshing={refreshing ?? false}
+            onRefresh={onRefresh}
+            tintColor={colors.navy}
+          />
+        )
+      }
+    >
       {children}
     </ScrollView>
   );

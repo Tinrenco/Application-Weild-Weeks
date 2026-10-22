@@ -39,6 +39,53 @@ export const fr = {
     promo: (year: number) => `Promo ${year}`,
     logout: "Se déconnecter",
   },
+  dates: {
+    weekdays: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
+    weekdaysShort: ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"], // grid columns, Monday first
+    months: [
+      "janvier", "février", "mars", "avril", "mai", "juin",
+      "juillet", "août", "septembre", "octobre", "novembre", "décembre",
+    ],
+    /** 16:00 → "16h", 16:45 → "16h45". */
+    time: (hours: number, minutes: number) =>
+      minutes === 0 ? `${hours}h` : `${hours}h${String(minutes).padStart(2, "0")}`,
+  },
+  eventTypes: {
+    PARTY: "Soirée",
+    SNACK: "Goûter",
+    ASSOCIATION: "Assos",
+    SPORT: "Sport",
+    SCHOOL: "École",
+  },
+  calendar: {
+    title: "Weild Weeks",
+    searchPlaceholder: "Rechercher un événement, une asso, un lieu",
+    clearSearch: "Effacer la recherche",
+    filterBy: "Filtrer par",
+    favoritesOnly: "★ Favoris",
+    countOnDay: (n: number, day: string) => `${n} événement${n > 1 ? "s" : ""} le ${day}`,
+    countForSearch: (n: number, query: string) =>
+      `${n} résultat${n > 1 ? "s" : ""} pour « ${query} »`,
+    noResults: "Aucun événement ne correspond. Essaie un nom d'asso ou de lieu.",
+    noEventsWithFilters: "Aucun événement avec ces filtres.",
+    loadFailed: "Impossible de charger le programme.",
+  },
+  event: {
+    title: "Détails",
+    by: (organizers: string) => `par ${organizers}`,
+    notFound: "Cet événement n'existe plus.",
+    addFavorite: "Ajouter aux favoris",
+    inFavorites: "Dans tes favoris",
+    removeFavorite: "Retirer des favoris",
+    shotgunButton: "Aller au shotgun",
+    shotgunOpens: (date: string) => `Le shotgun ouvre ${date}.`,
+    shotgunForHeads: "Shotgun : ton chef de famille réserve pour toute ta famille.",
+  },
+  favorites: {
+    emptyTitle: "Aucun favori pour l'instant",
+    emptyHint: "Touche l'étoile d'un événement dans le calendrier pour le retrouver ici.",
+    openCalendar: "Ouvrir le calendrier",
+  },
 };
 
 export type Translations = typeof fr;

@@ -10,6 +10,9 @@ import {
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SessionProvider, useSession } from "@/auth/SessionProvider";
+import { EventsProvider } from "@/events/EventsProvider";
+import { useT } from "@/i18n";
+import { colors, fonts } from "@/theme";
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -29,17 +32,32 @@ export default function RootLayout() {
 }
 
 function RootNavigator() {
+  const t = useT();
   const { isLoading, user } = useSession();
   if (isLoading) return null;
 
+  // EventsProvider shares the programme between the Calendar, Favourites and event pages.
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Protected guard={user !== null}>
-        <Stack.Screen name="(tabs)" />
-      </Stack.Protected>
-      <Stack.Protected guard={user === null}>
-        <Stack.Screen name="login" />
-      </Stack.Protected>
-    </Stack>
+    <EventsProvider userId={user?.id ?? null}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Protected guard={user !== null}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="event/[id]"
+            options={{
+              headerShown: true,
+              title: t.event.title,
+              headerTintColor: colors.navy,
+              headerTitleStyle: { fontFamily: fonts.extraBold, color: colors.navy },
+              headerStyle: { backgroundColor: colors.background },
+              headerShadowVisible: false,
+            }}
+          />
+        </Stack.Protected>
+        <Stack.Protected guard={user === null}>
+          <Stack.Screen name="login" />
+        </Stack.Protected>
+      </Stack>
+    </EventsProvider>
   );
 }

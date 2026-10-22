@@ -2,13 +2,13 @@
 //
 //   const { user, signIn, signOut } = useSession();
 //
-// The session token is stored in the phone's secure storage (expo-secure-store),
+// The session token is stored in the phone's secure storage (see tokenStorage.ts),
 // so the user stays logged in after closing the app. signIn() takes a Session,
 // whatever login method produced it (dev login today, ViaRézo OAuth later).
-import * as SecureStore from "expo-secure-store";
 import { createContext, use, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ApiError, setAuthToken } from "@/api/client";
 import { getMe, type Profile, type Session } from "@/api/endpoints";
+import { deleteToken, readToken, saveToken } from "./tokenStorage";
 
 const TOKEN_KEY = "session-token";
 
@@ -36,19 +36,19 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     setAuthToken(null);
     setUser(null);
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
+    await deleteToken(TOKEN_KEY);
   }, []);
 
   const signIn = useCallback(async ({ token, user }: Session) => {
     setAuthToken(token);
     setUser(user);
-    await SecureStore.setItemAsync(TOKEN_KEY, token);
+    await saveToken(TOKEN_KEY, token);
   }, []);
 
   // At startup: restore the stored session, if any.
   useEffect(() => {
     async function restore() {
-      const token = await SecureStore.getItemAsync(TOKEN_KEY);
+      const token = await readToken(TOKEN_KEY);
       if (!token) return;
       setAuthToken(token);
       try {

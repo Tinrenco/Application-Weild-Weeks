@@ -64,6 +64,7 @@ npm run dev                      # redémarre à chaque modification
 | `api/` | `npm run db:seed` | remet les données fictives (efface la base) |
 | `api/` | `npm run db:studio` | interface web pour voir/modifier la base |
 | `app/` | `npx expo start` | lance l'appli |
+| `app/` | `npx expo start --web` | aperçu de l'appli dans le navigateur (pratique en dev, ne remplace pas un test sur téléphone) |
 | les deux | `npm run lint` / `npm run typecheck` | vérifications (lancées aussi par la CI) |
 | racine | `docker compose down -v` | arrête tout **et supprime la base** |
 

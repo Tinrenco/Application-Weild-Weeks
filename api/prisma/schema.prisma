@@ -12,6 +12,11 @@ generator client {
   provider        = "prisma-client"
   output          = "../src/generated/prisma"
   previewFeatures = ["partialIndexes"]
+  // Explicit, so the generated imports end in ".js" even when tsconfig.json is not
+  // there yet (the Dockerfile runs `prisma generate` before copying it). Node needs
+  // ".js" to run the compiled code in dist/.
+  moduleFormat        = "esm"
+  importFileExtension = "js"
 }
 
 datasource db {

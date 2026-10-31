@@ -25,6 +25,8 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+      # The very first start creates the database, which can take over a minute on Windows/WSL.
+      start_period: 120s
 
   api:
     build: ./api

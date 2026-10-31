@@ -33,6 +33,10 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-wei}:${POSTGRES_PASSWORD:-wei}@db:5432/${POSTGRES_DB:-wei}
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-dev-secret-change-me}
       DEV_LOGIN_ENABLED: ${DEV_LOGIN_ENABLED:-true}
+      VIAREZO_CLIENT_ID: ${VIAREZO_CLIENT_ID:-}
+      VIAREZO_CLIENT_SECRET: ${VIAREZO_CLIENT_SECRET:-}
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:3000/api}
+      APP_RETURN_URLS: ${APP_RETURN_URLS:-weildweeks://,exp://,http://localhost:8081/}
       PORT: 3000
     depends_on:
       db:

@@ -9,6 +9,7 @@ import { eventsRouter } from "./routes/events.js";
 import { favoritesRouter } from "./routes/favorites.js";
 import { healthRouter } from "./routes/health.js";
 import { meRouter } from "./routes/me.js";
+import { viarezoAuthRouter } from "./routes/viarezo-auth.js";
 
 export function createApp() {
   const app = express();
@@ -22,6 +23,7 @@ export function createApp() {
   app.use("/api/me", meRouter);
   app.use("/api/events", eventsRouter);
   app.use("/api/favorites", favoritesRouter);
+  app.use("/api/auth/viarezo", viarezoAuthRouter);
   if (config.DEV_LOGIN_ENABLED) {
     app.use("/api/auth", devAuthRouter);
   }

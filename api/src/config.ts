@@ -12,6 +12,29 @@ const schema = z.object({
     .enum(["true", "false"])
     .default("false")
     .transform((value) => value === "true"),
+
+  // --- ViaRézo login (see src/auth/viarezo.ts) ---
+  // Client created on https://moncompte.viarezo.fr/developer. Leave both empty to
+  // disable the ViaRézo login (the dev login still works).
+  VIAREZO_CLIENT_ID: z.string().default(""),
+  VIAREZO_CLIENT_SECRET: z.string().default(""),
+  VIAREZO_ISSUER: z.url().default("https://moncompte.viarezo.fr"),
+  /**
+   * Public URL of this API, as seen by the user's browser, e.g. https://weildweeks.cs-campus.fr/api.
+   * ViaRézo sends users back to `${PUBLIC_API_URL}/auth/viarezo/callback`: that exact
+   * URL must be registered as a redirect URI of the client.
+   */
+  PUBLIC_API_URL: z.url().default("http://localhost:3000/api"),
+  /**
+   * Comma-separated beginnings of the app URLs we may send users back to after login.
+   * Anything else is refused (protection against open redirects).
+   * Production: "weildweeks://" only. Development also needs Expo Go ("exp://")
+   * and the web preview ("http://localhost:8081/").
+   */
+  APP_RETURN_URLS: z
+    .string()
+    .default("weildweeks://")
+    .transform((value) => value.split(",").map((s) => s.trim()).filter(Boolean)),
 });
 
 const parsed = schema.safeParse(process.env);

@@ -18,7 +18,10 @@ export const fr = {
   login: {
     welcome: "Bienvenue sur l'appli des Weild Weeks",
     viarezoButton: "Se connecter avec ViaRézo",
-    viarezoUnavailable: "Connexion ViaRézo pas encore disponible.",
+    viarezoHint: "Ton compte ViaRézo (CentraleSupélec) suffit.",
+    viarezoDenied: "Connexion annulée : l'appli a besoin de ton accord pour lire ton profil ViaRézo.",
+    viarezoNotConfigured: "Connexion ViaRézo pas encore configurée sur ce serveur.",
+    viarezoFailed: "La connexion ViaRézo a échoué. Réessaie.",
     devTitle: "Connexion de développement",
     devHint: "Choisis un utilisateur de test (données fictives).",
     apiUnreachable: "Impossible de joindre l'API. Elle est lancée ?",

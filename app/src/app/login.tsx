@@ -1,11 +1,11 @@
-// Login screen.
-// The ViaRézo button is disabled until we get the OAuth client. Meanwhile, in
-// development builds only, a list of fictional test users lets you log in as any of them.
+// Login screen: "Log in with ViaRézo" (see src/auth/viarezoLogin.ts). In development
+// builds only, a list of fictional test users also lets you log in as any of them.
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { devLogin, getDevUsers, type DevUser } from "@/api/endpoints";
 import { useSession } from "@/auth/SessionProvider";
+import { loginWithViarezo, ViarezoLoginError } from "@/auth/viarezoLogin";
 import { useT } from "@/i18n";
 import { colors, fonts, radius, spacing } from "@/theme";
 
@@ -18,14 +18,55 @@ export default function LoginScreen() {
         <Text style={styles.logo}>WEI</Text>
         <Text style={styles.welcome}>{t.login.welcome}</Text>
 
-        <Pressable style={[styles.button, styles.buttonDisabled]} disabled>
-          <Text style={styles.buttonText}>{t.login.viarezoButton}</Text>
-        </Pressable>
-        <Text style={styles.hint}>{t.login.viarezoUnavailable}</Text>
+        <ViarezoLogin />
 
         {__DEV__ && <DevLogin />}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function ViarezoLogin() {
+  const t = useT();
+  const { signIn } = useSession();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function login() {
+    setBusy(true);
+    setError(null);
+    try {
+      const session = await loginWithViarezo();
+      if (session) await signIn(session); // null: the user closed the browser
+    } catch (e) {
+      const reason = e instanceof ViarezoLoginError ? e.reason : "network";
+      setError(
+        reason === "access_denied"
+          ? t.login.viarezoDenied
+          : reason === "viarezo_not_configured"
+            ? t.login.viarezoNotConfigured
+            : t.login.viarezoFailed,
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <Pressable
+        style={[styles.button, busy && styles.buttonDisabled]}
+        disabled={busy}
+        onPress={() => void login()}
+      >
+        {busy ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>{t.login.viarezoButton}</Text>
+        )}
+      </Pressable>
+      <Text style={error ? styles.loginError : styles.hint}>{error ?? t.login.viarezoHint}</Text>
+    </>
   );
 }
 
@@ -112,6 +153,7 @@ const styles = StyleSheet.create({
   buttonDisabled: { opacity: 0.5 },
   buttonText: { fontFamily: fonts.bold, color: "#fff", textAlign: "center", fontSize: 15 },
   hint: { fontFamily: fonts.regular, color: "#fff", opacity: 0.75, textAlign: "center", fontSize: 12 },
+  loginError: { fontFamily: fonts.semiBold, color: colors.orange, textAlign: "center", fontSize: 13 },
   devBox: { backgroundColor: colors.card, borderRadius: radius.lg, padding: spacing.md, gap: spacing.sm },
   devTitle: { fontFamily: fonts.bold, color: colors.navy, fontSize: 15 },
   devHint: { fontFamily: fonts.regular, color: colors.muted, fontSize: 12 },

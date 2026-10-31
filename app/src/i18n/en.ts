@@ -18,7 +18,10 @@ export const en: Translations = {
   login: {
     welcome: "Welcome to the Weild Weeks app",
     viarezoButton: "Log in with ViaRézo",
-    viarezoUnavailable: "ViaRézo login is not available yet.",
+    viarezoHint: "Your ViaRézo (CentraleSupélec) account is all you need.",
+    viarezoDenied: "Login cancelled: the app needs your consent to read your ViaRézo profile.",
+    viarezoNotConfigured: "ViaRézo login is not configured on this server yet.",
+    viarezoFailed: "ViaRézo login failed. Please try again.",
     devTitle: "Development login",
     devHint: "Pick a test user (fictional data).",
     apiUnreachable: "Cannot reach the API. Is it running?",

@@ -42,7 +42,22 @@ npx expo start                               # scanne le QR code avec Expo Go
 
 Vérifier que l'API tourne : http://localhost:3000/api/health doit répondre `{"status":"ok","database":"ok"}`.
 
-Dans l'appli, l'écran de connexion propose une **connexion de développement** : on choisit un utilisateur de test (orga, chef de famille, 1A sans famille…). Elle n'existe que tant que la variable `DEV_LOGIN_ENABLED=true` est définie, et que l'appli tourne en mode développement. Elle sera remplacée par la connexion ViaRézo dès qu'on aura le client OAuth.
+Dans l'appli, l'écran de connexion propose une **connexion de développement** : on choisit un utilisateur de test (orga, chef de famille, 1A sans famille…). Elle n'existe que tant que la variable `DEV_LOGIN_ENABLED=true` est définie, et que l'appli tourne en mode développement.
+
+### Connexion ViaRézo
+
+Le bouton « Se connecter avec ViaRézo » utilise OpenID Connect ([doc ViaRézo](https://moncompte.viarezo.fr/developer)). C'est l'**API** qui parle à ViaRézo et garde le secret ; l'appli ne reçoit à la fin que notre propre jeton de session. Le fonctionnement est expliqué en tête de [api/src/auth/viarezo.ts](api/src/auth/viarezo.ts).
+
+Pour l'activer :
+
+1. Sur [moncompte.viarezo.fr/developer](https://moncompte.viarezo.fr/developer), créer un client avec les scopes `openid`, `profile`, `email`, la méthode `authorization_code`, et comme URI de redirection **exactement** `PUBLIC_API_URL` + `/auth/viarezo/callback` :
+   - en local (Expo web) : `http://localhost:3000/api/auth/viarezo/callback`
+   - avec Expo Go sur un vrai téléphone : `http://<IP de ton ordi>:3000/api/auth/viarezo/callback`, et `PUBLIC_API_URL` avec la même IP
+   - en production : `https://weildweeks.cs-campus.fr/api/auth/viarezo/callback`
+2. Mettre `VIAREZO_CLIENT_ID` et `VIAREZO_CLIENT_SECRET` dans `.env` (racine pour Docker, ou `api/.env`). **Le secret ne va jamais dans Git.**
+3. En production : `APP_RETURN_URLS=weildweeks://` et `DEV_LOGIN_ENABLED=false`.
+
+Sans client configuré, le bouton affiche « pas encore configurée » et la connexion de développement reste disponible.
 
 ### Développer l'API sans la reconstruire à chaque fois
 

@@ -1,6 +1,6 @@
 // One function per API route. Types mirror what the API sends:
 // keep them in sync with api/src (users.ts, routes/*.ts).
-import { apiFetch } from "./client";
+import { API_URL, apiFetch } from "./client";
 
 export type Role = "STUDENT" | "ORGANIZER";
 
@@ -65,6 +65,15 @@ export const addFavorite = (eventId: number) =>
 
 export const removeFavorite = (eventId: number) =>
   apiFetch<null>(`/favorites/${eventId}`, { method: "DELETE" });
+
+// --- ViaRézo login (see src/auth/viarezoLogin.ts) ---
+
+/** Page that starts the login; opened in a browser, not fetched. */
+export const viarezoStartUrl = (returnUrl: string) =>
+  `${API_URL}/auth/viarezo/start?returnUrl=${encodeURIComponent(returnUrl)}`;
+
+export const viarezoExchange = (code: string) =>
+  apiFetch<Session>("/auth/viarezo/exchange", { method: "POST", body: { code } });
 
 // --- Development login (only works when the API has DEV_LOGIN_ENABLED=true) ---
 

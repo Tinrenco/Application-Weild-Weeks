@@ -103,6 +103,9 @@ export const fr = {
     missingTitle: "Donne un titre à l'événement.",
     invalidDate: "Date ou heure invalide. Exemple : 2027-09-01 et 20:00.",
     publishFailed: "L'envoi a échoué. Vérifie ta connexion et réessaie.",
+    deleteEvent: "Supprimer l'événement",
+    confirmDelete: "Confirmer la suppression",
+    deleteFailed: "La suppression a échoué. Réessaie.",
   },
 };
 

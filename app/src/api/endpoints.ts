@@ -76,6 +76,9 @@ export type EventInput = {
 export const createEvent = (event: EventInput) =>
   apiFetch<Event>("/events", { method: "POST", body: event });
 
+export const deleteEvent = (eventId: number) =>
+  apiFetch<null>(`/events/${eventId}`, { method: "DELETE" });
+
 export const addFavorite = (eventId: number) =>
   apiFetch<null>(`/favorites/${eventId}`, { method: "PUT" });
 

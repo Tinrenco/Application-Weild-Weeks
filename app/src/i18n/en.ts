@@ -100,5 +100,8 @@ export const en: Translations = {
     missingTitle: "Give the event a title.",
     invalidDate: "Invalid date or time. Example: 2027-09-01 and 20:00.",
     publishFailed: "Sending failed. Check your connection and try again.",
+    deleteEvent: "Delete event",
+    confirmDelete: "Confirm deletion",
+    deleteFailed: "Deletion failed. Try again.",
   },
 };

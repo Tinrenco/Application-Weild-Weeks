@@ -15,6 +15,7 @@ import { useEvents } from "@/events/EventsProvider";
 import { useT } from "@/i18n";
 import type { Translations } from "@/i18n/fr";
 import { colors, eventTypeColors, fonts, radius, spacing } from "@/theme";
+import { Chip } from "@/components/Chip";
 
 const EVENT_TYPES = Object.keys(eventTypeColors) as EventType[];
 
@@ -229,20 +230,6 @@ function DayGrid(props: {
   );
 }
 
-function Chip(props: { label: string; selected: boolean; onPress: () => void; dotColor?: string }) {
-  return (
-    <Pressable
-      style={[styles.chip, props.selected && styles.chipSelected]}
-      onPress={props.onPress}
-      accessibilityRole="button"
-      accessibilityState={{ selected: props.selected }}
-    >
-      {props.dotColor && <View style={[styles.chipDot, { backgroundColor: props.dotColor }]} />}
-      <Text style={[styles.chipText, props.selected && styles.chipTextSelected]}>{props.label}</Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   center: {
     flex: 1,
@@ -301,22 +288,7 @@ const styles = StyleSheet.create({
 
   filterLabel: { fontFamily: fonts.bold, fontSize: 12, color: colors.navy, marginTop: spacing.xs },
   chips: { gap: 6 },
-  chip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.card,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  chipSelected: { borderColor: colors.navy, backgroundColor: colors.navy },
-  chipDot: { width: 8, height: 8, borderRadius: 4 },
-  chipText: { fontFamily: fonts.semiBold, fontSize: 12, color: colors.muted },
-  chipTextSelected: { color: "#fff" },
-
+  
   count: {
     fontFamily: fonts.bold,
     fontSize: 14,

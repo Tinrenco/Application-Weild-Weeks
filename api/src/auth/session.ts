@@ -52,3 +52,12 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
   res.locals.user = user;
   next();
 };
+
+/** Middleware: rejects the request with 403 unless the user is an organizer. Use it after requireAuth. */
+export const requireOrganizer: RequestHandler = (_req, res, next) => {
+  if (res.locals.user.role !== "ORGANIZER") {
+    res.status(403).json({ error: "forbidden" });
+    return;
+  }
+  next();
+};

@@ -1,8 +1,10 @@
 // GET /api/events      — every event (the calendar)
 // GET /api/events/:id  — one event (the detail page)
+// POST /api/events     — create an event (organizers only)
+
 import { Router } from "express";
 import { z } from "zod";
-import { requireAuth } from "../auth/session.js";
+import { requireAuth, requireOrganizer } from "../auth/session.js";
 import { getEvent, listEvents } from "../events.js";
 
 export const eventsRouter = Router();
@@ -23,4 +25,9 @@ eventsRouter.get("/:id", async (req, res) => {
     return;
   }
   res.json(event);
+});
+
+eventsRouter.post("/", requireOrganizer, async (_req, res) => {
+  // For now, just confirm the organizer got through. The real creation comes next.
+  res.status(201).json({ ok: true });
 });

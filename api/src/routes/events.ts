@@ -1,6 +1,7 @@
 // GET /api/events      — every event (the calendar)
 // GET /api/events/:id  — one event (the detail page)
 // POST /api/events     — create an event (organizers only)
+// PUT  /api/events/:id  — replace an event (organizers only)
 
 import { Router } from "express";
 import { z } from "zod";
@@ -46,19 +47,41 @@ const eventBody = z
     path: ["endsAt"],
   });
 
+/** True if no place is given, or if the given place exists. */
+async function placeIsValid(placeId: number | null): Promise<boolean> {
+  if (placeId === null) return true;
+  const count = await prisma.place.count({ where: { id: placeId } });
+  return count > 0;
+}
+
 eventsRouter.post("/", requireOrganizer, async (req, res) => {
   const data = eventBody.parse(req.body);
 
-  // If a place is given, it must exist: answer 400 instead of a database error.
-  if (data.placeId !== null) {
-    const placeExists = await prisma.place.count({ where: { id: data.placeId } });
-    if (!placeExists) {
-      res.status(400).json({ error: "place_not_found" });
-      return;
-    }
+  // If a place is given, it must exist: answer 400 instead of a database error
+  if (!(await placeIsValid(data.placeId))) {
+    res.status(400).json({ error: "place_not_found" });
+    return;
   }
 
   const created = await prisma.event.create({ data });
   // Answer with the same shape as GET /api/events/:id.
   res.status(201).json(await getEvent(res.locals.user, created.id));
+});
+
+eventsRouter.put("/:id", requireOrganizer, async (req, res) => {
+  const { id } = idParams.parse(req.params);
+  const data = eventBody.parse(req.body);
+
+  const exists = await prisma.event.count({ where: { id } });
+  if (!exists) {
+    res.status(404).json({ error: "event_not_found" });
+    return;
+  }
+  if (!(await placeIsValid(data.placeId))) {
+    res.status(400).json({ error: "place_not_found" });
+    return;
+  }
+
+  await prisma.event.update({ where: { id }, data });
+  res.json(await getEvent(res.locals.user, id));
 });

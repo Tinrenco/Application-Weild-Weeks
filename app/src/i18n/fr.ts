@@ -92,6 +92,17 @@ export const fr = {
   organizer: {
     title: "Espace Organisateur",
     newEvent: "Ajouter un évènement",
+    titleLabel: "Titre",
+    titlePlaceholder: "Ex. : Soirée d'ouverture",
+    typeLabel: "Type",
+    dateLabel: "Date (AAAA-MM-JJ)",
+    startLabel: "Début (HH:MM)",
+    endLabel: "Fin (HH:MM)",
+    descriptionLabel: "Description",
+    publish: "Publier",
+    missingTitle: "Donne un titre à l'événement.",
+    invalidDate: "Date ou heure invalide. Exemple : 2027-09-01 et 20:00.",
+    publishFailed: "L'envoi a échoué. Vérifie ta connexion et réessaie.",
   },
 };
 

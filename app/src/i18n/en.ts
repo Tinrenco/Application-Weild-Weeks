@@ -89,5 +89,16 @@ export const en: Translations = {
   organizer: {
     title: "Organizer Space",
     newEvent: "Add an event",
+    titleLabel: "Title",
+    titlePlaceholder: "E.g. Opening party",
+    typeLabel: "Type",
+    dateLabel: "Date (YYYY-MM-DD)",
+    startLabel: "Start (HH:MM)",
+    endLabel: "End (HH:MM)",
+    descriptionLabel: "Description",
+    publish: "Publish",
+    missingTitle: "Give the event a title.",
+    invalidDate: "Invalid date or time. Example: 2027-09-01 and 20:00.",
+    publishFailed: "Sending failed. Check your connection and try again.",
   },
 };

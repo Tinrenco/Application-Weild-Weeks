@@ -86,4 +86,8 @@ export const en: Translations = {
     emptyHint: "Tap the star of an event in the calendar to find it here.",
     openCalendar: "Open the calendar",
   },
+  organizer: {
+    title: "Organizer Space",
+    newEvent: "Add an event",
+  },
 };

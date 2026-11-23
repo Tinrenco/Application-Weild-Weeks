@@ -89,6 +89,10 @@ export const fr = {
     emptyHint: "Touche l'étoile d'un événement dans le calendrier pour le retrouver ici.",
     openCalendar: "Ouvrir le calendrier",
   },
+  organizer: {
+    title: "Espace Organisateur",
+    newEvent: "Ajouter un évènement",
+  },
 };
 
 export type Translations = typeof fr;

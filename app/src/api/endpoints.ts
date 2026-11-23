@@ -60,6 +60,22 @@ export const getMe = () => apiFetch<Profile>("/me");
 
 export const getEvents = () => apiFetch<Event[]>("/events");
 
+/** What an organizer sends to create an event (see eventBody in api/src/routes/events.ts). */
+export type EventInput = {
+  title: string;
+  description: string;
+  type: EventType;
+  startsAt: string;
+  endsAt: string;
+  placeId: number | null;
+  associationIds: number[];
+  shotgunUrl: string | null;
+  shotgunOpensAt: string | null;
+};
+
+export const createEvent = (event: EventInput) =>
+  apiFetch<Event>("/events", { method: "POST", body: event });
+
 export const addFavorite = (eventId: number) =>
   apiFetch<null>(`/favorites/${eventId}`, { method: "PUT" });
 

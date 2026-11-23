@@ -54,6 +54,19 @@ function RootNavigator() {
             }}
           />
         </Stack.Protected>
+        <Stack.Protected guard={user?.role === "ORGANIZER"}>
+          <Stack.Screen
+            name="organizer"
+            options={{
+              headerShown: true,
+              title: t.organizer.title,
+              headerTintColor: colors.navy,
+              headerTitleStyle: { fontFamily: fonts.extraBold, color: colors.navy },
+              headerStyle: { backgroundColor: colors.background },
+              headerShadowVisible: false,
+            }}
+          />
+        </Stack.Protected>
         <Stack.Protected guard={user === null}>
           <Stack.Screen name="login" />
         </Stack.Protected>

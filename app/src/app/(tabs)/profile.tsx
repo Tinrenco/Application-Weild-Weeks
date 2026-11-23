@@ -4,6 +4,7 @@ import { useSession } from "@/auth/SessionProvider";
 import { Card, Screen, SectionTitle } from "@/components/Screen";
 import { useT } from "@/i18n";
 import { colors, fonts, spacing } from "@/theme";
+import { router } from "expo-router";
 
 export default function ProfileScreen() {
   const t = useT();
@@ -41,7 +42,11 @@ export default function ProfileScreen() {
           <Text style={styles.muted}>{t.profile.noFamily}</Text>
         )}
       </Card>
-
+      {user.role === "ORGANIZER" && (
+        <Pressable style={styles.organizer} onPress={() => router.push("/organizer")}>
+          <Text style={styles.organizerText}>{t.organizer.title}</Text>
+        </Pressable>
+      )}
       <Pressable style={styles.logout} onPress={signOut}>
         <Text style={styles.logoutText}>{t.profile.logout}</Text>
       </Pressable>
@@ -94,5 +99,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
   },
+  organizer: { marginTop: spacing.lg, backgroundColor: colors.navy, borderRadius: 12, padding: 12 },
+  organizerText: { fontFamily: fonts.bold, color: "#fff", textAlign: "center" },
   logoutText: { fontFamily: fonts.bold, color: colors.navy, textAlign: "center" },
 });
